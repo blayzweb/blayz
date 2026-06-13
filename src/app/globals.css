@@ -1,26 +1,114 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Blayz brand tokens (PRD §2.1)
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --blayz-orange: #ff3800;
+  --blayz-peach: #ffb69a;
+  --blayz-cream: #fff2e2;
+  --blayz-sky: #dce8f6;
+  --blayz-sage: #cbd6c1;
+  --blayz-gold: #e2c07a;
+  --blayz-ink: #1a1a1a;
+
+  /* Practical neutrals derived from the palette */
+  --blayz-ink-soft: #2a2724;
+  --blayz-cream-deep: #f4e3cd;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-blayz-orange: var(--blayz-orange);
+  --color-blayz-peach: var(--blayz-peach);
+  --color-blayz-cream: var(--blayz-cream);
+  --color-blayz-cream-deep: var(--blayz-cream-deep);
+  --color-blayz-sky: var(--blayz-sky);
+  --color-blayz-sage: var(--blayz-sage);
+  --color-blayz-gold: var(--blayz-gold);
+  --color-blayz-ink: var(--blayz-ink);
+  --color-blayz-ink-soft: var(--blayz-ink-soft);
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-satoshi);
+  --font-mono: var(--font-mono-code);
+  --font-kufi: var(--font-kufi);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
+html {
+  background: var(--blayz-cream);
+  color: var(--blayz-ink);
+  /* Lenis drives scrolling; keep native smooth off to avoid conflicts. */
+  scroll-behavior: auto;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  background: var(--blayz-cream);
+  color: var(--blayz-ink);
+  overflow-x: hidden;
+}
+
+/* Lenis recommended base styles */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ============================================================
+   Utility primitives
+   ============================================================ */
+.font-display {
+  font-family: var(--font-display), system-ui, sans-serif;
+}
+.font-kufi {
+  font-family: var(--font-kufi), serif;
+}
+
+/* The wordmark — lowercase, tight, geometric (placeholder for custom blayz font) */
+.wordmark {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  text-transform: lowercase;
+  line-height: 0.9;
+}
+
+/* Faint full-bleed arabesque watermark slot */
+.arabesque-watermark {
+  background-image: var(--watermark-src, none);
+  background-repeat: repeat;
+  background-size: 480px;
+}
+
+::selection {
+  background: var(--blayz-orange);
+  color: var(--blayz-cream);
+}
+
+/* Scrollbar (cosmetic; Lenis hides native scroll on most setups) */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
