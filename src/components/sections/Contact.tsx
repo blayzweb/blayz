@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { useSite } from "@/components/providers/SiteProvider";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -20,8 +21,19 @@ const PROJECT_TYPES = [
  */
 export function Contact() {
   const reduced = useReducedMotion();
+  const { quote } = useSite();
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string>("");
+  const [projectType, setProjectType] = useState("");
+  const [message, setMessage] = useState("");
+
+  // Prefill from a configurator build whenever a new quote arrives.
+  useEffect(() => {
+    if (!quote) return;
+    setProjectType(quote.projectType);
+    setMessage(quote.message);
+    setStatus("idle");
+  }, [quote]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,6 +54,8 @@ export function Contact() {
       }
       setStatus("success");
       form.reset();
+      setProjectType("");
+      setMessage("");
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -120,7 +134,12 @@ export function Contact() {
                 </Field>
 
                 <Field label="project type">
-                  <select name="projectType" className={inputCls} defaultValue="">
+                  <select
+                    name="projectType"
+                    className={inputCls}
+                    value={projectType}
+                    onChange={(e) => setProjectType(e.target.value)}
+                  >
                     <option value="" disabled>
                       Select one…
                     </option>
@@ -136,9 +155,11 @@ export function Contact() {
                   <textarea
                     name="message"
                     required
-                    rows={4}
+                    rows={message ? 8 : 4}
                     className={`${inputCls} resize-none`}
                     placeholder="Tell us about your project…"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
                   />
                 </Field>
 

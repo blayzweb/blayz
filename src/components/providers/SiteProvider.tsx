@@ -14,6 +14,12 @@ import { gsap, ScrollTrigger } from "@/lib/gsap";
 import type { SectionId } from "@/lib/sections";
 import { SECTIONS } from "@/lib/sections";
 
+/** A build configuration handed off from the Pricing configurator to Contact. */
+export interface QuotePrefill {
+  projectType: string;
+  message: string;
+}
+
 interface SiteContextValue {
   /** Stage B: true once the user scrolls past the Hero (PRD §6.2). */
   scrolled: boolean;
@@ -24,6 +30,12 @@ interface SiteContextValue {
   setIntroDone: (v: boolean) => void;
   /** Smooth-scroll to a section via Lenis. */
   scrollTo: (id: SectionId) => void;
+  /** Pause/resume Lenis (used to lock the page behind the configurator modal). */
+  lockScroll: (locked: boolean) => void;
+  /** Latest build config to prefill the contact form, if any. */
+  quote: QuotePrefill | null;
+  /** Stash a build config and jump to the contact form. */
+  requestQuote: (quote: QuotePrefill) => void;
 }
 
 const SiteContext = createContext<SiteContextValue | null>(null);
@@ -39,6 +51,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<SectionId>("hero");
   const [introDone, setIntroDone] = useState(false);
+  const [quote, setQuote] = useState<QuotePrefill | null>(null);
 
   // Drive Lenis from GSAP's ticker so scroll + ScrollTrigger stay in sync.
   useEffect(() => {
@@ -96,9 +109,33 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const lockScroll = useCallback((locked: boolean) => {
+    const lenis = lenisRef.current?.lenis;
+    if (locked) lenis?.stop();
+    else lenis?.start();
+  }, []);
+
+  const requestQuote = useCallback(
+    (next: QuotePrefill) => {
+      setQuote(next);
+      // Let the modal close + form mount before scrolling to it.
+      requestAnimationFrame(() => scrollTo("contact"));
+    },
+    [scrollTo],
+  );
+
   const value = useMemo<SiteContextValue>(
-    () => ({ scrolled, activeSection, introDone, setIntroDone, scrollTo }),
-    [scrolled, activeSection, introDone, scrollTo],
+    () => ({
+      scrolled,
+      activeSection,
+      introDone,
+      setIntroDone,
+      scrollTo,
+      lockScroll,
+      quote,
+      requestQuote,
+    }),
+    [scrolled, activeSection, introDone, scrollTo, lockScroll, quote, requestQuote],
   );
 
   return (
