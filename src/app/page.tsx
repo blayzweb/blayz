@@ -1,7 +1,7 @@
 "use client";
 
 import { LayoutGroup } from "framer-motion";
-import { SiteProvider } from "@/components/providers/SiteProvider";
+import { SiteProvider, useSite } from "@/components/providers/SiteProvider";
 import { LogoIntro } from "@/components/intro/LogoIntro";
 import { Header } from "@/components/nav/Header";
 import { SidebarIndex } from "@/components/nav/SidebarIndex";
@@ -12,11 +12,18 @@ import { Services } from "@/components/sections/Services";
 import { Pricing } from "@/components/sections/Pricing";
 import { Contact } from "@/components/sections/Contact";
 
-export default function Home() {
+function HomeContent() {
+  const { introDone } = useSite();
+
   return (
-    <SiteProvider>
-      <LayoutGroup>
-        <LogoIntro />
+    <>
+      <LogoIntro />
+
+      {/* Site stays hidden until the intro finishes — no flash-through on mobile. */}
+      <div
+        className={introDone ? "contents" : "pointer-events-none invisible"}
+        aria-hidden={!introDone}
+      >
         <Header />
         <SidebarIndex />
         <Spine />
@@ -28,6 +35,16 @@ export default function Home() {
           <Pricing />
           <Contact />
         </main>
+      </div>
+    </>
+  );
+}
+
+export default function Home() {
+  return (
+    <SiteProvider>
+      <LayoutGroup>
+        <HomeContent />
       </LayoutGroup>
     </SiteProvider>
   );
