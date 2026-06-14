@@ -134,8 +134,8 @@ export function AnimatedPricingCard({
         className,
       )}
     >
-      {/* 1 — top embroidered band */}
-      <TatreezBorder variant={top} height={26} />
+      {/* 1 — top embroidered band (flows left→right) */}
+      <TatreezBorder variant={top} height={26} animated />
 
       {/* 2 + 3 — content area layered over a large tatreez medallion */}
       <div className="relative flex-1 overflow-hidden px-7 pt-8 pb-7">
@@ -150,11 +150,11 @@ export function AnimatedPricingCard({
           style={reduced ? { opacity: 0.16 } : undefined}
         >
           <motion.div
-            animate={reduced ? undefined : { y: [0, -6, 0] }}
+            animate={reduced ? undefined : { y: [0, -6, 0], rotate: [-2.5, 2.5, -2.5] }}
             transition={
               reduced
                 ? undefined
-                : { duration: 9, repeat: Infinity, ease: "easeInOut" }
+                : { duration: 12, repeat: Infinity, ease: "easeInOut" }
             }
           >
             <Medallion className="h-64 w-64" />
@@ -216,8 +216,8 @@ export function AnimatedPricingCard({
         </div>
       </div>
 
-      {/* 4 — bottom embroidered band (mirror of the top) */}
-      <TatreezBorder variant={bottom} height={26} flip />
+      {/* 4 — bottom embroidered band (mirror of the top; counter-flows) */}
+      <TatreezBorder variant={bottom} height={26} flip animated />
 
       {/* 5 — full-width contact CTA */}
       <div className="p-5 pt-4">

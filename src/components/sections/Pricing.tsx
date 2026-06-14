@@ -73,6 +73,7 @@ export function Pricing() {
                 <TatreezBorder
                   variant={tier.featured ? "floral" : "diamonds"}
                   height={24}
+                  animated
                 />
 
                 <div className="relative flex flex-1 flex-col gap-6 overflow-hidden p-7">
@@ -189,6 +190,7 @@ export function Pricing() {
                 <TatreezBorder
                   variant={tier.featured ? "floral" : "diamonds"}
                   height={24}
+                  animated
                   flip
                 />
               </motion.div>

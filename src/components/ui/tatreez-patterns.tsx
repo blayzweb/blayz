@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { clsx } from "@/lib/clsx";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 /**
  * Tatreez (Levantine / Palestinian cross-stitch) embroidery primitives.
@@ -42,29 +43,29 @@ type Tile = readonly string[];
    Mirror-symmetric and periodic so they repeat with no seam.
    ============================================================ */
 
-/** Diamonds linked by small plus-stitches — a classic tatreez border run. */
+/**
+ * Diamonds linked by small plus-stitches — a classic tatreez border run.
+ * 7 rows tall (edge line + 5-row motif + edge line) so the stitches read large
+ * relative to the band height: bigger, fewer repeats, same footprint.
+ */
 const DIAMOND_TILE: Tile = [
   "RRRRRRRR",
-  "........",
   "..R.....",
   ".RBR..G.",
   "RBOBRGRG",
   ".RBR..G.",
   "..R.....",
-  "........",
   "RRRRRRRR",
 ];
 
 /** Eight-point flowers joined by a beige "vine" — an organic border run. */
 const FLORAL_TILE: Tile = [
   "RRRRRRRR",
-  "........",
   "..R.....",
   ".BOB..G.",
   "RORORGGG",
   ".BOB..G.",
   "..R.....",
-  "........",
   "RRRRRRRR",
 ];
 
@@ -102,6 +103,10 @@ export interface TatreezBorderProps {
   height?: number;
   /** Flip vertically — pair a top band with its mirror at the bottom. */
   flip?: boolean;
+  /** Continuously drift the stitches sideways, like a woven ribbon being fed. */
+  animated?: boolean;
+  /** Seconds to advance exactly one tile (lower = faster). */
+  durationPerTile?: number;
   className?: string;
 }
 
@@ -109,19 +114,27 @@ export interface TatreezBorderProps {
  * Full-width embroidered band. Tiles a single motif in pixel space via an SVG
  * <pattern> with `userSpaceOnUse`, so stitches stay perfectly square at any
  * width and repeat with no visible seam.
+ *
+ * When `animated`, the pattern's `patternTransform` is translated by exactly one
+ * tile on a loop — a seamless horizontal drift (the embroidery flows across the
+ * card). Automatically disabled under `prefers-reduced-motion`.
  */
 export function TatreezBorder({
   variant = "diamonds",
   height = 26,
   flip = false,
+  animated = false,
+  durationPerTile = 2.2,
   className,
 }: TatreezBorderProps) {
   const id = useId();
+  const reduced = useReducedMotion();
   const tile = variant === "floral" ? FLORAL_TILE : DIAMOND_TILE;
   const rows = tile.length;
   const cols = tile[0].length;
   const cell = height / rows;
   const tileW = cols * cell;
+  const drift = animated && !reduced;
 
   return (
     <svg
@@ -138,7 +151,18 @@ export function TatreezBorder({
           width={tileW}
           height={height}
           patternUnits="userSpaceOnUse"
+          patternTransform="translate(0 0)"
         >
+          {drift && (
+            <animateTransform
+              attributeName="patternTransform"
+              type="translate"
+              from="0 0"
+              to={`${tileW} 0`}
+              dur={`${durationPerTile}s`}
+              repeatCount="indefinite"
+            />
+          )}
           {stitches(tile, cell, 0.5)}
         </pattern>
       </defs>
