@@ -46,7 +46,7 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     id: "launch",
     name: "Launch",
-    price: "from $4k",
+    price: "from 4k",
     cadence: "fixed scope",
     blurb: "A sharp one-pager or landing site that makes a brand look inevitable.",
     features: [
@@ -61,7 +61,7 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     id: "studio",
     name: "Studio",
-    price: "from $12k",
+    price: "from 12k",
     cadence: "project",
     blurb: "Full site or product surface with a bespoke system and motion.",
     features: [
@@ -210,16 +210,19 @@ export function computeEstimate(tier: PricingTier, selected: string[]): Estimate
   };
 }
 
-/** Compact brand money format: 4000 -> "$4k", 4500 -> "$4.5k", 800 -> "$800". */
+/** ISO currency code for plain-text (non-glyph) contexts like emails. */
+export const CURRENCY_CODE = "AED";
+
+/** Compact money format (symbol-free): 4000 -> "4k", 4500 -> "4.5k", 800 -> "800". */
 export function formatMoney(n: number): string {
   if (n >= 1000) {
     const k = n / 1000;
-    return `$${k % 1 === 0 ? k : k.toFixed(1)}k`;
+    return `${k % 1 === 0 ? k : k.toFixed(1)}k`;
   }
-  return `$${n}`;
+  return `${n}`;
 }
 
-/** "$8k – $13k", collapsing to a single figure when low === high. */
+/** "8k – 13k", collapsing to a single figure when low === high. */
 export function formatRange([lo, hi]: [number, number]): string {
   return lo === hi
     ? formatMoney(lo)
@@ -250,9 +253,12 @@ export function buildSummary(tier: PricingTier, selected: string[]): string {
   }
 
   lines.push("");
-  if (estimate.once) lines.push(`Estimated one-off: ${formatRange(estimate.once)}`);
+  if (estimate.once)
+    lines.push(`Estimated one-off: ${CURRENCY_CODE} ${formatRange(estimate.once)}`);
   if (estimate.monthly)
-    lines.push(`Estimated monthly: ${formatRange(estimate.monthly)}/mo`);
+    lines.push(
+      `Estimated monthly: ${CURRENCY_CODE} ${formatRange(estimate.monthly)}/mo`,
+    );
   lines.push("");
   lines.push("(Generated from the Blayz configurator — rough estimate.)");
 

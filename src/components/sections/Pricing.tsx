@@ -17,6 +17,7 @@ import {
   TatreezDiamondPattern,
   TatreezFloralPattern,
 } from "@/components/ui/tatreez-patterns";
+import { Money } from "@/components/ui/money";
 
 /**
  * Pricing (PRD §7.4). Tatreez (Levantine cross-stitch) textile theme — each
@@ -115,20 +116,33 @@ export function Pricing() {
                     {configured && estimate ? (
                       <>
                         <p className="mt-3 font-mono text-3xl text-[#7A1118]">
-                          {headlineFigure(estimate)}
+                          <Money value={headlineFigure(estimate)} />
                         </p>
                         <p className="font-mono text-xs text-[#4A090D]/55">
-                          {estimate.once && estimate.monthly
-                            ? `your build + ${headlineFigure({ once: null, monthly: estimate.monthly })}/mo`
-                            : estimate.monthly
-                              ? "/ month"
-                              : "your build"}
+                          {estimate.once && estimate.monthly ? (
+                            <>
+                              your build +{" "}
+                              <Money
+                                value={headlineFigure({
+                                  once: null,
+                                  monthly: estimate.monthly,
+                                })}
+                                weight="regular"
+                                symbolSize="0.9em"
+                              />
+                              /mo
+                            </>
+                          ) : estimate.monthly ? (
+                            "/ month"
+                          ) : (
+                            "your build"
+                          )}
                         </p>
                       </>
                     ) : (
                       <>
                         <p className="mt-3 font-mono text-3xl text-[#7A1118]">
-                          {tier.price}
+                          <Money value={tier.price} />
                         </p>
                         {tier.cadence && (
                           <p className="font-mono text-xs text-[#4A090D]/55">

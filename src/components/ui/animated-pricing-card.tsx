@@ -10,6 +10,7 @@ import {
   TATREEZ_PALETTE,
   type PatternType,
 } from "@/components/ui/tatreez-patterns";
+import { Money } from "@/components/ui/money";
 
 export interface AnimatedPricingCardProps {
   /** Tier / plan name shown above the price. */
@@ -185,7 +186,7 @@ export function AnimatedPricingCard({
 
           <div className="mt-3 flex items-end gap-2">
             <span className="text-5xl leading-none font-semibold tracking-tight text-[#171313]">
-              {price}
+              <Money value={price} weight="semibold" />
             </span>
             {period && (
               <span className="pb-1 text-sm font-medium text-[#4A090D]/70">

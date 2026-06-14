@@ -15,6 +15,7 @@ import {
   type Addon,
   type PricingTier,
 } from "@/content/pricing";
+import { Money } from "@/components/ui/money";
 
 /**
  * Full-screen split configurator (PRD §7.4 extension). Left: tier features +
@@ -171,9 +172,19 @@ export function ConfiguratorModal({
                             {addon.label}
                           </span>
                           <span className="shrink-0 font-mono text-xs text-blayz-orange">
-                            {included
-                              ? "included"
-                              : `+ ${formatRange(addon.delta)}${addon.unit === "mo" ? "/mo" : ""}`}
+                            {included ? (
+                              "included"
+                            ) : (
+                              <>
+                                +{" "}
+                                <Money
+                                  value={formatRange(addon.delta)}
+                                  weight="regular"
+                                  symbolSize="0.9em"
+                                />
+                                {addon.unit === "mo" ? "/mo" : ""}
+                              </>
+                            )}
                           </span>
                         </span>
                         <span className="mt-0.5 block font-sans text-xs text-blayz-ink/55">
@@ -195,13 +206,17 @@ export function ConfiguratorModal({
                   </p>
                   {estimate.once && (
                     <p className="font-mono text-2xl leading-tight text-blayz-orange">
-                      {formatRange(estimate.once)}
+                      <Money value={formatRange(estimate.once)} />
                     </p>
                   )}
                   {estimate.monthly && (
                     <p className="font-mono text-sm text-blayz-ink/60">
                       {estimate.once && "+ "}
-                      {formatRange(estimate.monthly)}
+                      <Money
+                        value={formatRange(estimate.monthly)}
+                        weight="regular"
+                        symbolSize="0.9em"
+                      />
                       <span className="text-blayz-ink/40">/mo</span>
                     </p>
                   )}
