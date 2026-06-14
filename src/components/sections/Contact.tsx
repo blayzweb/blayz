@@ -30,6 +30,7 @@ export function Contact() {
   // Prefill from a configurator build whenever a new quote arrives.
   useEffect(() => {
     if (!quote) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setProjectType(quote.projectType);
     setMessage(quote.message);
     setStatus("idle");

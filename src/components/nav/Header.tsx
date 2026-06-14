@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useSite } from "@/components/providers/SiteProvider";
+import { Logo } from "@/components/ui/Logo";
 
 /**
  * Persistent header (PRD §6.3). The small docked wordmark only mounts once
@@ -19,11 +20,11 @@ export function Header() {
           <motion.button
             layoutId="blayz-logo"
             onClick={() => scrollTo("hero")}
-            className="wordmark pointer-events-auto absolute top-4 left-5 text-2xl text-blayz-orange sm:left-8"
+            className="pointer-events-auto absolute top-4 left-5 w-12 h-6 text-blayz-orange sm:left-8 flex items-center justify-center"
             aria-label="Blayz — back to top"
             transition={{ type: "spring", stiffness: 220, damping: 26 }}
           >
-            blayz
+            <Logo fillColor="currentColor" className="w-full h-full" />
           </motion.button>
         )}
       </AnimatePresence>

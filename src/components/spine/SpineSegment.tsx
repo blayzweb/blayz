@@ -7,7 +7,7 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 import { clsx } from "@/lib/clsx";
 
 interface SpineSegmentProps {
-  paths: { d: string }[];
+  paths: { d: string; transform?: string }[];
   /** Stroke colour (any CSS colour / var). */
   color: string;
   /** Section that scopes this segment's scroll trigger. */
@@ -39,7 +39,7 @@ export function SpineSegment({
 
   useGSAP(
     () => {
-      const targets = ref.current?.querySelectorAll("path");
+      const targets = ref.current?.querySelectorAll<SVGPathElement>("path");
       if (!targets || targets.length === 0) return;
 
       if (reduced) {
@@ -47,7 +47,14 @@ export function SpineSegment({
         return;
       }
 
-      gsap.set(targets, { strokeDashoffset: 1 });
+      // Dynamically measure path lengths and set stroke properties to hide them completely
+      targets.forEach((path) => {
+        const length = path.getTotalLength();
+        gsap.set(path, {
+          strokeDasharray: length,
+          strokeDashoffset: length,
+        });
+      });
 
       if (mode === "scrub") {
         const trigger = document.getElementById(sectionId);
@@ -90,14 +97,12 @@ export function SpineSegment({
         <path
           key={i}
           d={p.d}
+          transform={p.transform}
           fill="none"
           stroke={color}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
-          pathLength={1}
-          strokeDasharray={1}
-          strokeDashoffset={1}
           vectorEffect="non-scaling-stroke"
         />
       ))}

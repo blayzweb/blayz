@@ -1,7 +1,6 @@
 /**
- * Procedural pattern generators.
+ * Procedural pattern generators using the Blayz ornament generator mathematics.
  *
- * These are PLACEHOLDERS for Anas's SVG generator output (PRD §8, asset #7–10).
  * Every path is designed to be stroked and "drawn" via stroke-dashoffset.
  * We rely on SVG `pathLength={1}` normalisation so a single scrub from
  * strokeDashoffset 1 -> 0 fully draws any path regardless of its real length.
@@ -15,46 +14,167 @@ function pt(cx: number, cy: number, r: number, a: number): [number, number] {
 
 const f = (n: number) => Number(n.toFixed(2));
 
+interface PatternPath {
+  d: string;
+  transform?: string;
+  layer?: string;
+}
+
 /**
- * Arabesque / Tatreez "bloom" medallion.
- * Concentric rings of petals radiating from the centre — the core brand motif.
- * Returns an ordered list of path `d` strings (inner rings first) so drawing
- * them in sequence reads as the bloom expanding outward.
+ * Arabesque / Floral / Geometric "bloom" medallion.
+ * Concentric layers of rotating petals radiating from the centre — the core brand motif.
+ * Returns an ordered list of paths (guides first, outer layers, inner layers, core hub)
+ * so drawing them in sequence reads as the bloom expanding outward.
  */
 export function bloomMedallion(
   size = 600,
-  rings = 4,
-): { d: string }[] {
+  _rings = 4, // maintained for signature compatibility
+): PatternPath[] {
+  void _rings;
   const cx = size / 2;
   const cy = size / 2;
-  const maxR = size * 0.46;
-  const paths: { d: string }[] = [];
+  const maxR = size * 0.38; // Max radius for medallion (228px)
+  const paths: PatternPath[] = [];
 
-  for (let ring = 1; ring <= rings; ring++) {
-    const rOuter = (maxR * ring) / rings;
-    const rInner = (maxR * (ring - 0.55)) / rings;
-    const petals = 6 + ring * 6;
+  const tr = (angle: number) => `translate(${cx}, ${cy}) rotate(${angle})`;
 
-    // The ring circle itself.
-    paths.push({ d: circlePath(cx, cy, rInner) });
+  // 1. Grid/Guides (6 cardinal lines and 2 concentric circles)
+  // Radial guides (6 spokes)
+  for (let i = 0; i < 6; i++) {
+    const angle = i * 60;
+    const rad = (angle * Math.PI) / 180;
+    const x2 = Math.cos(rad) * (maxR * 1.1);
+    const y2 = Math.sin(rad) * (maxR * 1.1);
+    paths.push({
+      d: `M 0 0 L ${f(x2)} ${f(y2)}`,
+      transform: tr(0),
+      layer: "guides",
+    });
+  }
+  // Concentric circles guides
+  paths.push({ d: circlePath(cx, cy, maxR * 0.5), layer: "guides" });
+  paths.push({ d: circlePath(cx, cy, maxR * 1.0), layer: "guides" });
 
-    let d = "";
-    for (let i = 0; i < petals; i++) {
-      const a = (i / petals) * TAU;
-      const aNext = ((i + 0.5) / petals) * TAU;
-      const [bx, by] = pt(cx, cy, rInner, a);
-      const [tx, ty] = pt(cx, cy, rOuter, a);
-      const [mx, my] = pt(cx, cy, (rInner + rOuter) / 2, aNext);
-      // teardrop petal: base -> tip via one control, back via the gap control
-      d += `M ${f(bx)} ${f(by)} Q ${f(mx)} ${f(my)} ${f(tx)} ${f(ty)} `;
-      const [mx2, my2] = pt(cx, cy, (rInner + rOuter) / 2, a - aNext + a);
-      d += `Q ${f(mx2)} ${f(my2)} ${f(bx)} ${f(by)} `;
+  // 2. Petal path generators (drawn centered at 0, 0, pointing up)
+  const getPetalPath = (w: number, h: number, type: string) => {
+    switch (type) {
+      case "floral": // Round curves teardrop
+        return `M 0 0 C ${f(-w / 2)} ${f(-h / 3)} ${f(-w)} ${f(-h * 0.8)} 0 ${f(-h)} C ${f(w)} ${f(-h * 0.8)} ${f(w / 2)} ${f(-h / 3)} 0 0 Z`;
+      case "arabesque": // Pointed arch shape (single outline for simplicity)
+        return `M 0 0 C ${f(-w)} ${f(-h / 4)} ${f(-w)} ${f(-h / 2)} ${f(-w / 3)} ${f(-h * 0.7)} C ${f(-w / 4)} ${f(-h * 0.8)} ${f(-w / 8)} ${f(-h * 0.9)} 0 ${f(-h)} C ${f(w / 8)} ${f(-h * 0.9)} ${f(w / 4)} ${f(-h * 0.8)} ${f(w / 3)} ${f(-h * 0.7)} C ${f(w)} ${f(-h / 2)} ${f(w)} ${f(-h / 4)} 0 0 Z`;
+      case "geometric": // Sharp diamond
+        return `M 0 0 L ${f(-w / 2)} ${f(-h / 2)} L 0 ${f(-h)} L ${f(w / 2)} ${f(-h / 2)} Z`;
+      default:
+        return `M 0 0 L 0 ${f(-h)}`;
     }
-    paths.push({ d });
+  };
+
+  // Layer 3 (Outer): geometric petals, symmetry 6, scale 1.0, rotated 30 deg offset
+  const l3H = maxR * 1.0;
+  const l3W = l3H * 0.45;
+  const l3Path = getPetalPath(l3W, l3H, "geometric");
+  for (let i = 0; i < 6; i++) {
+    paths.push({
+      d: l3Path,
+      transform: tr(i * 60 + 30),
+      layer: "l3",
+    });
   }
 
-  // Central star.
-  paths.unshift({ d: starPath(cx, cy, maxR / rings / 1.6, 8) });
+  // Layer 2 (Middle): arabesque petals, symmetry 6, scale 0.72, rotated 0 deg (single outline for clean geometry)
+  const l2H = maxR * 0.72;
+  const l2W = l2H * 0.45;
+  const l2Path = getPetalPath(l2W, l2H, "arabesque");
+  for (let i = 0; i < 6; i++) {
+    paths.push({
+      d: l2Path,
+      transform: tr(i * 60),
+      layer: "l2",
+    });
+  }
+
+  // Layer 1 (Inner): floral petals, symmetry 6, scale 0.45, rotated 0 deg
+  const l1H = maxR * 0.45;
+  const l1W = l1H * 0.45;
+  const l1Path = getPetalPath(l1W, l1H, "floral");
+  for (let i = 0; i < 6; i++) {
+    paths.push({
+      d: l1Path,
+      transform: tr(i * 60),
+      layer: "l1",
+    });
+  }
+
+  // 3. Core Hub (circles at center)
+  paths.push({
+    d: `M -7 0 A 7 7 0 1 0 7 0 A 7 7 0 1 0 -7 0 Z`,
+    transform: tr(0),
+    layer: "core",
+  });
+  paths.push({
+    d: `M -2.5 0 A 2.5 2.5 0 1 0 2.5 0 A 2.5 2.5 0 1 0 -2.5 0 Z`,
+    transform: tr(0),
+    layer: "core",
+  });
+
+  // 4. Middle Particles (diamonds and plus signs at maxR * 1.22)
+  const midDist = maxR * 1.22;
+  const diamondPath = `M 0 -6 L 6 0 L 0 6 L -6 0 Z`;
+  // 4 cardinal diamonds
+  for (let i = 0; i < 4; i++) {
+    const angle = i * 90;
+    const rad = (angle * Math.PI) / 180;
+    const px = Math.cos(rad) * midDist;
+    const py = Math.sin(rad) * midDist;
+    paths.push({
+      d: diamondPath,
+      transform: `translate(${f(cx + px)}, ${f(cy + py)})`,
+      layer: "particles",
+    });
+  }
+  // 4 diagonal pluses
+  for (let i = 0; i < 4; i++) {
+    const angle = i * 90 + 45;
+    const rad = (angle * Math.PI) / 180;
+    const px = Math.cos(rad) * midDist;
+    const py = Math.sin(rad) * midDist;
+    paths.push({
+      d: `M -4 0 L 4 0 M 0 -4 L 0 4`,
+      transform: `translate(${f(cx + px)}, ${f(cy + py)})`,
+      layer: "particles",
+    });
+  }
+
+  // 5. Outer scattered ASCII glyphs halo (12 points at maxR * 1.42)
+  const outerDist = maxR * 1.42;
+  for (let i = 0; i < 12; i++) {
+    const angle = i * 30;
+    const rad = (angle * Math.PI) / 180;
+    const px = Math.cos(rad) * outerDist;
+    const py = Math.sin(rad) * outerDist;
+
+    let d = "";
+    if (i % 3 === 0) {
+      // Small diamond
+      d = `M 0 -4 L 4 0 L 0 4 L -4 0 Z`;
+    } else if (i % 3 === 1) {
+      // Cross 'x'
+      d = `M -3 -3 L 3 3 M 3 -3 L -3 3`;
+    } else {
+      // Brackets
+      const isLeft = Math.cos(rad) < 0;
+      d = isLeft
+        ? `M 2 -3 L -1 -3 L -1 3 L 2 3`  // [
+        : `M -2 -3 L 1 -3 L 1 3 L -2 3`; // ]
+    }
+
+    paths.push({
+      d,
+      transform: `translate(${f(cx + px)}, ${f(cy + py)})`,
+      layer: "particles",
+    });
+  }
+
   return paths;
 }
 
@@ -62,17 +182,6 @@ function circlePath(cx: number, cy: number, r: number): string {
   return `M ${f(cx - r)} ${f(cy)} a ${f(r)} ${f(r)} 0 1 0 ${f(r * 2)} 0 a ${f(
     r,
   )} ${f(r)} 0 1 0 ${f(-r * 2)} 0`;
-}
-
-function starPath(cx: number, cy: number, r: number, points: number): string {
-  let d = "";
-  for (let i = 0; i < points * 2; i++) {
-    const rr = i % 2 === 0 ? r : r * 0.45;
-    const a = (i / (points * 2)) * TAU - Math.PI / 2;
-    const [x, y] = pt(cx, cy, rr, a);
-    d += `${i === 0 ? "M" : "L"} ${f(x)} ${f(y)} `;
-  }
-  return d + "Z";
 }
 
 /**
@@ -84,8 +193,8 @@ export function bloomVine(
   width = 80,
   height = 600,
   nodes = 9,
-): { d: string }[] {
-  const paths: { d: string }[] = [];
+): PatternPath[] {
+  const paths: PatternPath[] = [];
   const cx = width / 2;
   const step = height / nodes;
   const amp = width * 0.22;
@@ -99,7 +208,7 @@ export function bloomVine(
   }
   paths.push({ d: stem });
 
-  // petal clusters at each node
+  // petal clusters at each node (closed teardrop curves matching floral style)
   for (let i = 1; i < nodes; i++) {
     const y = i * step;
     const x = cx + Math.sin(i * 0.9) * amp;
@@ -109,8 +218,9 @@ export function bloomVine(
     for (let p = 0; p < petals; p++) {
       const a = (p / petals) * TAU - Math.PI / 2;
       const [tx, ty] = pt(x, y, r, a);
-      const [mx, my] = pt(x, y, r * 0.5, a + 0.4);
-      d += `M ${f(x)} ${f(y)} Q ${f(mx)} ${f(my)} ${f(tx)} ${f(ty)} `;
+      const [mx1, my1] = pt(x, y, r * 0.55, a + 0.35);
+      const [mx2, my2] = pt(x, y, r * 0.55, a - 0.35);
+      d += `M ${f(x)} ${f(y)} Q ${f(mx1)} ${f(my1)} ${f(tx)} ${f(ty)} Q ${f(mx2)} ${f(my2)} ${f(x)} ${f(y)} `;
     }
     paths.push({ d });
   }
@@ -121,7 +231,7 @@ export function bloomVine(
  * Synthesis vine — bloom vine overlaid with sadu diamonds and terminal ticks,
  * for the closing Contact spine segment (PRD §7.5).
  */
-export function synthesisVine(width = 80, height = 600): { d: string }[] {
+export function synthesisVine(width = 80, height = 600): PatternPath[] {
   const out = bloomVine(width, height, 7);
   const cx = width / 2;
   const ticks = 18;
@@ -152,8 +262,8 @@ export function saduBand(
   width = 80,
   height = 600,
   rows = 14,
-): { d: string }[] {
-  const paths: { d: string }[] = [];
+): PatternPath[] {
+  const paths: PatternPath[] = [];
   const step = height / rows;
   const m = width * 0.18;
 
@@ -196,8 +306,8 @@ export function terminalLines(
   width = 80,
   height = 600,
   lines = 26,
-): { d: string }[] {
-  const paths: { d: string }[] = [];
+): PatternPath[] {
+  const paths: PatternPath[] = [];
   const step = height / lines;
   // deterministic pseudo-random lengths
   let seed = 7;
@@ -219,7 +329,7 @@ export function terminalLines(
  * A bloom medallion overlaid with sadu diamonds + terminal ticks so the
  * closing segment echoes all prior motifs.
  */
-export function synthesisBloom(size = 600): { d: string }[] {
+export function synthesisBloom(size = 600): PatternPath[] {
   const cx = size / 2;
   const cy = size / 2;
   const out = bloomMedallion(size, 3);
