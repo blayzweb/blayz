@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import {
-  JetBrains_Mono,
-  Reem_Kufi,
-  Manrope,
-  Space_Grotesk,
-} from "next/font/google";
+import { JetBrains_Mono, Reem_Kufi, Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 /**
@@ -12,19 +8,34 @@ import "./globals.css";
  *
  * - `blayz` custom display  -> placeholder: Space Grotesk (swap with next/font/local once
  *                              the real wordmark font file is delivered).
- * - Satoshi (body)          -> placeholder: Manrope (closest free geometric grotesque).
+ * - Satoshi (body)          -> genuine (variable, self-hosted via next/font/local).
  * - JetBrains Mono (labels) -> genuine.
  * - Reem Kufi (accents)     -> genuine.
  */
+// Spec: Primary Display — Light / Regular / Bold (logotype, headlines, large
+// statements). Regular (400) MUST be loaded or default-weight `font-display`
+// headings silently fall back to a system font.
 const display = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "700"],
+  weight: ["300", "400", "500", "700"],
 });
 
-const satoshi = Manrope({
+const satoshi = localFont({
   variable: "--font-satoshi",
-  subsets: ["latin"],
+  display: "swap",
+  src: [
+    {
+      path: "./fonts/Satoshi-Variable.woff2",
+      weight: "300 900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Satoshi-VariableItalic.woff2",
+      weight: "300 900",
+      style: "italic",
+    },
+  ],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -32,10 +43,11 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+// Spec: Accent — Reem Kufi at Medium / Bold (Arabic + cultural touchpoints).
 const reemKufi = Reem_Kufi({
   variable: "--font-kufi",
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600"],
+  weight: ["500", "700"],
 });
 
 export const metadata: Metadata = {

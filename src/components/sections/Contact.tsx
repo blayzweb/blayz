@@ -60,7 +60,7 @@ export function Contact() {
         <p className="mb-4 font-mono text-sm text-blayz-orange">
           [ 05 ] Contact
         </p>
-        <h2 className="mb-12 max-w-2xl font-display text-4xl leading-tight text-blayz-ink sm:text-5xl">
+        <h2 className="mb-12 max-w-2xl font-display text-4xl leading-tight font-bold tracking-tight text-blayz-ink sm:text-5xl">
           Let&rsquo;s build something{" "}
           <span className="text-blayz-orange">crafted</span>.
         </h2>

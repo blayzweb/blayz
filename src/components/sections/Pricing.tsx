@@ -21,7 +21,7 @@ export function Pricing() {
         <p className="mb-4 font-mono text-sm text-blayz-orange">
           [ 04 ] Pricing
         </p>
-        <h2 className="mb-16 max-w-2xl font-display text-4xl leading-tight text-blayz-ink sm:text-5xl">
+        <h2 className="mb-16 max-w-2xl font-display text-4xl leading-tight font-bold tracking-tight text-blayz-ink sm:text-5xl">
           Woven to fit — from a single landing to an ongoing partnership.
         </h2>
 

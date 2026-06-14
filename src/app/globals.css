@@ -73,8 +73,11 @@ html.lenis body {
 .font-display {
   font-family: var(--font-display), system-ui, sans-serif;
 }
+/* Reem Kufi ships only Medium/Bold (per the type system); pin the default
+   accent weight to Medium so `font-kufi` text always has a loaded face. */
 .font-kufi {
   font-family: var(--font-kufi), serif;
+  font-weight: 500;
 }
 
 /* The wordmark — lowercase, tight, geometric (placeholder for custom blayz font) */

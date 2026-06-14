@@ -76,7 +76,7 @@ export function AboutUs() {
         {/* Copy */}
         <div className="flex flex-col gap-8">
           <p className="font-mono text-sm text-blayz-orange">[ 02 ] About</p>
-          <h2 className="font-display text-4xl leading-tight text-blayz-ink sm:text-5xl">
+          <h2 className="font-display text-4xl leading-tight font-bold tracking-tight text-blayz-ink sm:text-5xl">
             A studio where ornament
             <br />
             meets the command line.
