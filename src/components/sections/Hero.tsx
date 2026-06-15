@@ -1,308 +1,255 @@
-"use client";
+// components/hero/Hero.tsx
+//
+// Parent component: Canvas + HTML overlays + the single GSAP timeline that
+// drives EVERYTHING. This is the "single source of truth" — one
+// scrollProgress (0→1 via ScrollTrigger scrub), mapped to explicit
+// keyframes for every object.
+//
+// Logo wipe (bug #2 fix): the logo is HTML/SVG only, in two stacked copies
+// (orange base + white foreground), white copy revealed via clip-path as
+// the Sadu ribbon's x-position crosses it. No WebGL logo mesh at all —
+// removes the ExtrudeGeometry/MeshStandardMaterial lighting problem
+// entirely, and matches the brand guide's "flat logo, no gradients/shadows"
+// rule by construction.
+//
+// Timeline reference — your 5 sketched frames mapped to scroll progress:
+//
+//   0%   Frame 1: orange logo (left), laptop closed (right, large)
+//   20%  Frame 2: laptop lifts, lid begins opening, slight tilt
+//   45%  Frame 3: lid ~fully open, Sadu ribbon begins emerging from screen
+//   65%  Frame 4: laptop rotates "sideways", ribbon travels toward logo,
+//                 particles begin (if/when added)
+//   85%  Frame 5: ribbon crosses logo — logo wipes orange→white in sync
+//   100% Settle: ribbon fully across, laptop fades/recedes
+//   100%+ (next ScrollTrigger) Stage B dock — logo + index move to header/sidebar
 
-import { useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
-import { HeroIndex } from "@/components/nav/HeroIndex";
-import { useSite } from "@/components/providers/SiteProvider";
-import { Logo } from "@/components/ui/Logo";
-import dynamic from "next/dynamic";
-import { type HeroCanvas3DHandle } from "@/components/ui/HeroCanvasR3F";
+import { useRef, useState, Suspense } from "react";
+import { Canvas } from "@react-three/fiber";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import ScrollTrigger from "gsap/ScrollTrigger";
+import { HeroScene, type HeroSceneRefs } from "./HeroScene";
+import { Logo } from "@/components/ui/Logo"; // your existing SVG logo component
 
-// Dynamically load the WebGL Canvas to prevent SSR issues
-const HeroCanvasR3F = dynamic(
-  () => import("@/components/ui/HeroCanvasR3F").then((mod) => mod.HeroCanvasR3F),
-  { ssr: false }
-);
+gsap.registerPlugin(ScrollTrigger);
 
-export function Hero() {
-  const { scrolled, introDone, scrollTo } = useSite();
-  const showBig = !scrolled;
+// ---- Explicit keyframes -----------------------------------------------
+// One object per timeline position. `at` is the scroll-progress fraction
+// (0–1) within this section's pinned scroll range. GSAP timeline positions
+// are absolute time units (seconds) when scrub is a duration — using a
+// 0–1 "logical duration" keeps these numbers directly readable as %.
 
+const KEYFRAMES = {
+  // Lid hinge rotation.x — see CLOSED_X / OPEN_X in HeroScene.tsx
+  lidRotationX: [
+    { at: 0,    value: 1.6 },   // closed
+    { at: 0.2,  value: 1.2 },   // starting to open
+    { at: 0.45, value: 0.0 },   // fully open
+    { at: 1,    value: 0.0 },   // stays open
+  ],
+  // Whole laptop group
+  laptopRotationX: [
+    { at: 0,    value: 0.1 },
+    { at: 0.2,  value: 0.15 },
+    { at: 0.45, value: 0.2 },
+    { at: 0.65, value: 0.35 },  // tipping toward "sideways"
+    { at: 1,    value: 0.5 },
+  ],
+  laptopRotationY: [
+    { at: 0,    value: -0.2 },
+    { at: 0.2,  value: -0.35 }, // slight tilt to the side (frame 2)
+    { at: 0.45, value: -0.5 },
+    { at: 0.65, value: -1.4 },  // rotating toward sideways (frame 4)
+    { at: 1,    value: -1.55 },
+  ],
+  laptopRotationZ: [
+    { at: 0,   value: 0 },
+    { at: 0.65, value: 0.1 },
+    { at: 1,   value: 0.15 },
+  ],
+  laptopPositionY: [
+    { at: 0,    value: -0.26 },  // resting
+    { at: 0.2,  value: -0.26 },  // lifts (frame 2)
+    { at: 0.65, value: -0.22 },
+    { at: 1,    value: -0.24 },
+  ],
+  laptopPositionX: [
+    { at: 0,   value: 1.2 },    // right side (frame 1)
+    { at: 0.65, value: 0.8 },
+    { at: 1,   value: 0.7 },
+  ],
+  laptopScale: [
+    { at: 0,   value: 0.18 },
+    { at: 1,   value: 0.14 },    // recedes slightly by the end
+  ],
+
+  // Sadu ribbon — "emerges from nothing" at the screen, travels left
+  saduScaleScalar: [
+    { at: 0,    value: 0.001 }, // invisible
+    { at: 0.45, value: 0.001 }, // still invisible until screen is open
+    { at: 0.55, value: 0.39 },   // emerging
+    { at: 0.85, value: 1.3 },   // full size
+    { at: 1,    value: 1.3 },
+  ],
+  saduPositionX: [
+    { at: 0.45, value: 1.1 },   // at the screen
+    { at: 0.65, value: 0.2 },   // traveling toward logo
+    { at: 0.85, value: -0.9 },  // crossing the logo's x-position
+    { at: 1,    value: -1.8 },  // fully past, off toward header
+  ],
+  saduPositionY: [
+    { at: 0.45, value: 0.0 },
+    { at: 1,    value: 0.0 },
+  ],
+
+  // Screen glow (point light) — flares as the lid opens
+  glowIntensity: [
+    { at: 0.2,  value: 0 },
+    { at: 0.45, value: 1.2 },
+    { at: 0.6,  value: 0.6 },
+    { at: 1,    value: 0.2 },
+  ],
+
+  // Logo wipe progress — drives the white-overlay clip-path, 0 = fully
+  // orange, 1 = fully white. Synced to when the Sadu ribbon's x-position
+  // crosses the logo's x-position on screen (~0.8–0.95 range; tune against
+  // saduPositionX above and the logo's actual screen position).
+  logoWipe: [
+    { at: 0,    value: 0 },
+    { at: 0.8,  value: 0 },
+    { at: 0.95, value: 1 },
+    { at: 1,    value: 1 },
+  ],
+} as const;
+
+// Build a GSAP timeline tween set from a keyframe array targeting a
+// property on `target`.
+function applyKeyframes<T extends Record<string, number>>(
+  tl: gsap.core.Timeline,
+  target: T,
+  prop: keyof T,
+  frames: readonly { at: number; value: number }[],
+  totalDuration: number
+) {
+  for (let i = 1; i < frames.length; i++) {
+    const from = frames[i - 1];
+    const to = frames[i];
+    tl.to(
+      target,
+      {
+        [prop]: to.value,
+        duration: (to.at - from.at) * totalDuration,
+        ease: "none",
+      },
+      from.at * totalDuration
+    );
+  }
+}
+
+export default function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const desktopLogoRef = useRef<HTMLDivElement>(null);
-  const desktopWhiteLogoRef = useRef<HTMLDivElement>(null);
-  const desktopTextRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HeroCanvas3DHandle>(null);
-  const [canvasReady, setCanvasReady] = useState(false);
+  const whiteLogoRef = useRef<HTMLDivElement>(null);
+  const sceneRefs = useRef<HeroSceneRefs | null>(null);
 
-  typeof window !== "undefined" && ((window as any).canvasRef = canvasRef);
+  // Local proxy object — same role as before, but values are applied
+  // directly to refs in onUpdate rather than stashed on `canvas.*`.
+  const [proxy] = useState(() => ({
+    lidRotationX: 1.6,
+    laptopRotationX: 0.1,
+    laptopRotationY: -0.2,
+    laptopRotationZ: 0,
+    laptopPositionX: 1.2,
+    laptopPositionY: -0.26,
+    laptopScale: 0.18,
+    saduScaleScalar: 0.001,
+    saduPositionX: 1.1,
+    saduPositionY: 0.0,
+    glowIntensity: 0,
+    logoWipe: 0,
+  }));
 
-  useGSAP(
-    () => {
-      if (!introDone || !canvasReady) return;
+  useGSAP(() => {
+    const TOTAL = 100; // "logical duration" — keyframe `at` values are 0–1 fractions of this
 
-      const logo = desktopLogoRef.current;
-      const whiteLogo = desktopWhiteLogoRef.current;
-      const text = desktopTextRef.current;
-      const canvas = canvasRef.current;
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        pin: true,
+        start: "top top",
+        end: "+=200%",
+        scrub: 1,
+        pinSpacing: true,
+      },
+      onUpdate: () => {
+        const refs = sceneRefs.current;
+        if (!refs) return;
 
-      const mm = gsap.matchMedia();
+        if (refs.lidNode) {
+          refs.lidNode.rotation.x = proxy.lidRotationX;
+        }
+        if (refs.laptopGroup) {
+          refs.laptopGroup.rotation.set(
+            proxy.laptopRotationX,
+            proxy.laptopRotationY,
+            proxy.laptopRotationZ
+          );
+          refs.laptopGroup.position.set(
+            proxy.laptopPositionX,
+            proxy.laptopPositionY,
+            0
+          );
+          refs.laptopGroup.scale.setScalar(proxy.laptopScale);
+        }
+        if (refs.saduGroup) {
+          refs.saduGroup.scale.setScalar(proxy.saduScaleScalar);
+          refs.saduGroup.position.set(proxy.saduPositionX, proxy.saduPositionY, 0);
+        }
+        if (refs.screenGlowLight) {
+          refs.screenGlowLight.intensity = proxy.glowIntensity;
+        }
 
-      // 1. DESKTOP TIMELINE (min-width: 1024px)
-      mm.add("(min-width: 1024px)", () => {
-        if (!logo || !whiteLogo || !text || !canvas) return;
+        // Logo wipe — clip-path on the white overlay.
+        // logoWipe: 0 = fully clipped (hidden, shows orange beneath),
+        //           1 = fully revealed (white).
+        if (whiteLogoRef.current) {
+          const pct = (1 - proxy.logoWipe) * 100;
+          whiteLogoRef.current.style.clipPath = `inset(0 0 0 ${pct}%)`;
+        }
+      },
+    });
 
-        // Reset positions
-        gsap.set(logo, { opacity: 0, scale: 1, left: "50%", top: "50%", xPercent: -50, yPercent: -50, width: "28rem", height: "14rem" });
-        gsap.set(whiteLogo, { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)", opacity: 1 });
+    (Object.keys(KEYFRAMES) as Array<keyof typeof KEYFRAMES>).forEach((key) => {
+      applyKeyframes(tl, proxy, key, KEYFRAMES[key], TOTAL);
+    });
 
-        const animProxy = {
-          lidRotationX: 1.6,
-          laptopRotationX: 0.2,
-          laptopRotationY: -0.3,
-          laptopRotationZ: 0.0,
-          laptopPositionY: -0.6,
-          laptopScale: 0.9,
-          saduScaleScalar: 0.001,
-          saduPositionX: 1.2,
-          saduPositionY: -0.2,
-          glowIntensity: 0.0,
-          logoWipe: 0.0,
-          logoScale: 1.0,
-        };
-
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: containerRef.current,
-            pin: true,
-            start: "top top",
-            end: "+=200%",
-            scrub: 1.0,
-            pinSpacing: true,
-          },
-          onUpdate: () => {
-            if (!canvas) return;
-            if (canvas.lidGroup) canvas.lidGroup.rotation.x = animProxy.lidRotationX;
-            if (canvas.laptopGroup) {
-              canvas.laptopGroup.rotation.set(animProxy.laptopRotationX, animProxy.laptopRotationY, animProxy.laptopRotationZ);
-              canvas.laptopGroup.position.y = animProxy.laptopPositionY;
-              canvas.laptopGroup.scale.setScalar(animProxy.laptopScale);
-            }
-            if (canvas.saduGroup) {
-              // Scale along X to stretch ribbon, while keeping Y and Z at normal height/thickness
-              canvas.saduGroup.scale.set(
-                animProxy.saduScaleScalar * canvas.saduTargetScaleX,
-                animProxy.saduScaleScalar,
-                animProxy.saduScaleScalar
-              );
-              canvas.saduGroup.position.x = animProxy.saduPositionX;
-              canvas.saduGroup.position.y = animProxy.saduPositionY;
-            }
-            if (canvas.logoGroup) {
-              canvas.logoGroup.scale.setScalar(animProxy.logoScale);
-            }
-            canvas.logoUniforms.uProgress.value = animProxy.logoWipe;
-            if (canvas.screenGlowLight) canvas.screenGlowLight.intensity = animProxy.glowIntensity;
-          }
-        });
-
-        // Frame 1 -> Frame 2: Tagline, Index, and CTA fade out (0s -> 0.6s)
-        tl.to(text, { opacity: 0, y: -24, duration: 0.6, ease: "power2.out" }, 0);
-
-        // Frame 2 -> Frame 3: Laptop lid opens and chassis tilts back (0s -> 1.2s)
-        tl.to(animProxy, { lidRotationX: 0.0, ease: "power2.inOut", duration: 1.2 }, 0);
-        tl.to(animProxy, { laptopRotationY: 0.2, laptopRotationX: 0.1, laptopRotationZ: 0.05, ease: "power2.inOut", duration: 1.2 }, 0);
-
-        // Frame 3: Screen glow starts (0.8s -> 1.3s)
-        tl.to(animProxy, { glowIntensity: 4.5, duration: 0.5 }, 0.8);
-
-        // Frame 4: Laptop rotates sideways to face the left (2.2s -> 3.0s)
-        tl.to(animProxy, { laptopRotationY: 1.35, laptopRotationX: 0.0, laptopRotationZ: 0.0, ease: "power2.inOut", duration: 0.8 }, 2.2);
-
-        // Frame 4 -> Frame 5: Sadu ribbon emerges from screen and grows leftwards (2.2s -> 3.2s)
-        tl.to(animProxy, { saduScaleScalar: 1.0, ease: "power2.inOut", duration: 1.0 }, 2.2);
-
-        // Frame 5: Logo turns white in WebGL via uProgress uniform (2.55s -> 3.1s)
-        tl.to(animProxy, { logoWipe: 1.0, duration: 0.55, ease: "none" }, 2.55);
-
-        // Frame 5 -> 6: Handoff! Fade out WebGL logo & Fade in HTML logo (3.1s -> 3.2s)
-        tl.to(animProxy, { logoScale: 0.0, duration: 0.1 }, 3.1);
-        tl.to(logo, { opacity: 1, duration: 0.1 }, 3.1);
-
-        // Frame 6: HTML Logo docks to top-left and scales down to header dimensions (3.2s -> 4.0s)
-        const isSm = window.innerWidth >= 640;
-        const targetLeft = isSm ? "32px" : "20px";
-
-        tl.to(
-          logo,
-          {
-            left: targetLeft,
-            top: "16px",
-            xPercent: 0,
-            yPercent: 0,
-            width: 48,
-            height: 24,
-            ease: "power2.inOut",
-            duration: 0.8,
-          },
-          3.2
-        );
-
-        // Fade out white logo layer at the end of dock to reveal the orange layer underneath (3.7s -> 4.0s)
-        tl.to(
-          whiteLogo,
-          {
-            opacity: 0,
-            duration: 0.3,
-            ease: "power2.out",
-          },
-          3.7
-        );
-
-        // Transition out WebGL canvas elements (drop/shrink laptop & ribbon) (3.4s -> 4.0s)
-        tl.to(animProxy, { laptopPositionY: -3.1, laptopScale: 0.0, saduPositionY: -3.1, saduScaleScalar: 0.0, duration: 0.6, ease: "power2.in" }, 3.4);
-      });
-
-      // 2. MOBILE TIMELINE (max-width: 1023px)
-      mm.add("(max-width: 1023px)", () => {
-        if (!canvas) return;
-
-        const mobileProxy = {
-          lidRotationX: 1.6,
-          laptopRotationY: -0.3,
-          glowIntensity: 0.0,
-        };
-
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top 75%",
-            end: "bottom 20%",
-            scrub: 1.2,
-          },
-          onUpdate: () => {
-            if (canvas.lidGroup) canvas.lidGroup.rotation.x = mobileProxy.lidRotationX;
-            if (canvas.laptopGroup) canvas.laptopGroup.rotation.y = mobileProxy.laptopRotationY;
-            if (canvas.screenGlowLight) canvas.screenGlowLight.intensity = mobileProxy.glowIntensity;
-          }
-        });
-
-        // Simply open the lid
-        tl.to(mobileProxy, { lidRotationX: 0.0, laptopRotationY: 0.1, ease: "power2.inOut", duration: 1.0 }, 0);
-
-        // Screen glows
-        tl.to(mobileProxy, { glowIntensity: 3.5, duration: 0.8 }, 0.2);
-      });
-
-      return () => {
-        mm.revert();
-      };
-    },
-    { scope: containerRef, dependencies: [introDone, canvasReady] }
-  );
+    return () => {
+      tl.scrollTrigger?.kill();
+      tl.kill();
+    };
+  }, { scope: containerRef });
 
   return (
-    <section
-      ref={containerRef}
-      id="hero"
-      className="relative w-full overflow-hidden bg-blayz-cream min-h-svh flex items-center justify-center"
-    >
-      {/* faint full-bleed arabesque watermark slot (PRD §7.1) */}
-      <div className="arabesque-watermark pointer-events-none absolute inset-0 opacity-[0.05]" />
+    <section ref={containerRef} className="relative h-screen w-full overflow-hidden bg-[var(--blayz-cream)]">
+      {/* 3D scene */}
+      <div className="absolute inset-0">
+        <Canvas camera={{ position: [0, 0, 4], fov: 35 }}>
+          <Suspense fallback={null}>
+            <HeroScene onReady={(refs) => { sceneRefs.current = refs; }} />
+          </Suspense>
+        </Canvas>
+      </div>
 
-      {/* WebGL Three.js Canvas centerpiece (Desktop/Tablet/Mobile compatible) */}
-      {introDone && <HeroCanvasR3F ref={canvasRef} onReady={() => setCanvasReady(true)} />}
-
-      {/* 1. DESKTOP OVERLAY LAYOUT (min-width: 1024px) */}
-      <div className="hidden lg:grid grid-cols-2 w-full h-screen items-center justify-between relative max-w-7xl mx-auto z-10 px-12 pointer-events-none">
-        {/* Left Column: Logo & Tagline/Index/CTA */}
-        <div className="relative flex flex-col justify-center h-full items-start gap-12 w-full pointer-events-none">
-          {/* Logo container: starts centered, docks to top-left */}
-          <div
-            ref={desktopLogoRef}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[28rem] h-[14rem] flex items-center justify-center pointer-events-none opacity-0"
-          >
-            {/* Background Orange Logo */}
-            <Logo fillColor="var(--blayz-orange)" className="absolute inset-0 w-full h-full" />
-            
-            {/* Foreground White Logo */}
-            <div
-              ref={desktopWhiteLogoRef}
-              className="absolute inset-0 w-full h-full overflow-hidden"
-            >
-              <Logo fillColor="#ffffff" className="w-full h-full" />
-            </div>
-          </div>
-
-          {/* Secondary contents that fade out on scroll */}
-          <div ref={desktopTextRef} className="flex flex-col items-start gap-10 mt-[16rem] pointer-events-auto">
-            <p className="max-w-md text-balance font-sans text-xl text-blayz-ink/75 text-left">
-              We build websites that build brands.
-              <span className="mt-1 block font-mono text-sm text-blayz-ink/40">
-                crafted with code &amp; culture
-              </span>
-            </p>
-
-            <HeroIndex />
-
-            <button
-              onClick={() => scrollTo("contact")}
-              className="group font-mono text-base text-blayz-ink transition-colors hover:text-blayz-orange cursor-pointer"
-            >
-              <span className="text-blayz-orange">&lt;</span> start a project{" "}
-              <span className="text-blayz-orange">/&gt;</span>
-            </button>
-          </div>
+      {/* Logo overlay — two stacked copies, white one clip-revealed */}
+      <div className="absolute left-[8%] top-1/2 -translate-y-1/2 w-[28rem] h-[14rem] pointer-events-none">
+        <Logo fillColor="var(--blayz-orange)" className="absolute inset-0 w-full h-full" />
+        <div ref={whiteLogoRef} className="absolute inset-0 w-full h-full" style={{ clipPath: "inset(0 100% 0 0)" }}>
+          <Logo fillColor="#ffffff" className="w-full h-full" />
         </div>
-
-        {/* Right Column (Reserved space for laptop canvas) */}
-        <div className="relative flex items-center justify-center h-full w-full pointer-events-none" />
       </div>
 
-      {/* 2. MOBILE/TABLET LAYOUT (max-width: 1023px) */}
-      <div className="lg:hidden relative flex flex-col items-center gap-10 text-center w-full max-w-4xl z-10 px-6 py-24 pointer-events-none">
-        <AnimatePresence>
-          {showBig && (
-            <motion.button
-              layoutId="blayz-logo"
-              onClick={() => scrollTo("contact")}
-              transition={{ type: "spring", stiffness: 220, damping: 26 }}
-              className="w-[44vw] h-[22vw] sm:w-[32vw] sm:h-[16vw] text-blayz-orange flex items-center justify-center pointer-events-auto cursor-pointer"
-              aria-label="Blayz"
-            >
-              <Logo fillColor="currentColor" className="w-full h-full" />
-            </motion.button>
-          )}
-        </AnimatePresence>
-
-        <HeroIndex />
-
-        <motion.div
-          initial={introDone ? false : { opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: introDone ? 0 : 0.4, duration: 0.6 }}
-          className="flex flex-col items-center gap-6"
-        >
-          <p className="max-w-md text-balance font-sans text-lg text-blayz-ink/70">
-            We build websites that build brands.
-            <span className="mt-1 block font-mono text-sm text-blayz-ink/40">
-              crafted with code &amp; culture
-            </span>
-          </p>
-
-          <button
-            onClick={() => scrollTo("contact")}
-            className="group font-mono text-base text-blayz-ink transition-colors hover:text-blayz-orange pointer-events-auto cursor-pointer"
-          >
-            <span className="text-blayz-orange">&lt;</span> start a project{" "}
-            <span className="text-blayz-orange">/&gt;</span>
-          </button>
-        </motion.div>
-
-        {/* Empty spacing for inline canvas underneath contents on mobile */}
-        <div className="h-[200px] sm:h-[300px] w-full pointer-events-none" />
-      </div>
-
-      {/* scroll cue (Desktop only, hides as scroll starts) */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: showBig ? 1 : 0 }}
-        transition={{ delay: 0.8 }}
-        className="hidden lg:block absolute bottom-8 left-1/2 -translate-x-1/2 font-mono text-xs text-blayz-ink/40 z-10"
-      >
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-sm font-mono text-[var(--blayz-orange)]/60">
         scroll ↓
-      </motion.div>
+      </div>
     </section>
   );
 }
