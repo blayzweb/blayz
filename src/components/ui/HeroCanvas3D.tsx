@@ -38,7 +38,11 @@ export interface HeroCanvas3DHandle {
   particleProxy: { progress: number };
 }
 
-export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, {}>((_, ref) => {
+export interface HeroCanvas3DProps {
+  onReady?: () => void;
+}
+
+export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((props, ref) => {
   const mountRef = useRef<HTMLDivElement>(null);
 
   // References to pass to parent
@@ -464,6 +468,9 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, {}>((_, ref) => {
     };
     window.addEventListener("resize", handleResize);
     handleResize(); // trigger initially
+
+    // Trigger onReady to let the parent know the WebGL canvas is mounted and refs are populated
+    props.onReady?.();
 
     // 9. Cleanup
     return () => {

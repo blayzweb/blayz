@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { HeroIndex } from "@/components/nav/HeroIndex";
@@ -24,10 +24,11 @@ export function Hero() {
   const desktopWhiteLogoRef = useRef<HTMLDivElement>(null);
   const desktopTextRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HeroCanvas3DHandle>(null);
+  const [canvasReady, setCanvasReady] = useState(false);
 
   useGSAP(
     () => {
-      if (!introDone) return;
+      if (!introDone || !canvasReady) return;
 
       const logo = desktopLogoRef.current;
       const whiteLogo = desktopWhiteLogoRef.current;
@@ -191,7 +192,7 @@ export function Hero() {
         mm.revert();
       };
     },
-    { scope: containerRef, dependencies: [introDone] }
+    { scope: containerRef, dependencies: [introDone, canvasReady] }
   );
 
   return (
@@ -204,7 +205,7 @@ export function Hero() {
       <div className="arabesque-watermark pointer-events-none absolute inset-0 opacity-[0.05]" />
 
       {/* WebGL Three.js Canvas centerpiece (Desktop/Tablet/Mobile compatible) */}
-      {introDone && <HeroCanvas3D ref={canvasRef} />}
+      {introDone && <HeroCanvas3D ref={canvasRef} onReady={() => setCanvasReady(true)} />}
 
       {/* 1. DESKTOP OVERLAY LAYOUT (min-width: 1024px) */}
       <div className="hidden lg:grid grid-cols-2 w-full h-screen items-center justify-between relative max-w-7xl mx-auto z-10 px-12 pointer-events-none">
