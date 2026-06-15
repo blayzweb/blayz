@@ -4,6 +4,7 @@ import React, { useRef, useEffect, forwardRef, useImperativeHandle } from "react
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
 // Interface for Particle trajectories
 interface Particle3D {
@@ -127,8 +128,12 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, {}>((_, ref) => {
     laptopGroup.add(screenGlowLight);
     screenGlowLightRef.current = screenGlowLight;
 
-    // 3. Load MacBook Pro Model
+    // 3. Load MacBook Pro Model (with Draco decompressor)
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+
     const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
     gltfLoader.load(
       "/macbook.glb",
       (gltf) => {
