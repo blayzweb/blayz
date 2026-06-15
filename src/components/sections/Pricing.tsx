@@ -12,11 +12,18 @@ import {
 import { useSite } from "@/components/providers/SiteProvider";
 import { ConfiguratorModal } from "@/components/configurator/ConfiguratorModal";
 import { clsx } from "@/lib/clsx";
+import {
+  TatreezBorder,
+  TatreezDiamondPattern,
+  TatreezFloralPattern,
+} from "@/components/ui/tatreez-patterns";
+import { Money } from "@/components/ui/money";
 
 /**
- * Pricing (PRD §7.4). Sadu textile theme — tiers framed top/bottom by woven
- * geometric bands. Each tier opens a full-screen configurator (car-dealership
- * style) where add-ons rebuild a live mockup and update a running estimate.
+ * Pricing (PRD §7.4). Tatreez (Levantine cross-stitch) textile theme — each
+ * tier is framed top/bottom by seamless embroidered bands with a large stitched
+ * medallion woven behind the copy. Each tier opens a full-screen configurator
+ * where add-ons rebuild a live mockup and update a running estimate.
  */
 export function Pricing() {
   const { requestQuote } = useSite();
@@ -31,7 +38,7 @@ export function Pricing() {
       className="relative overflow-hidden bg-blayz-cream-deep px-6 py-32"
     >
       <div className="mx-auto max-w-6xl">
-        <p className="mb-4 font-mono text-sm text-blayz-orange">
+        <p className="mb-4 font-mono text-sm text-[#7A1118]">
           [ 04 ] Pricing
         </p>
         <h2 className="mb-6 max-w-2xl font-display text-4xl leading-tight font-bold tracking-tight text-blayz-ink sm:text-5xl">
@@ -58,27 +65,48 @@ export function Pricing() {
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 className={clsx(
-                  "flex flex-col overflow-hidden rounded-xl border bg-blayz-cream",
+                  "flex flex-col overflow-hidden rounded-2xl border bg-[#F4EFE7]",
                   tier.featured
-                    ? "border-blayz-orange shadow-[0_30px_80px_-40px_rgba(255,56,0,0.5)]"
-                    : "border-blayz-ink/10",
+                    ? "border-[#7A1118] shadow-[0_40px_90px_-50px_rgba(122,17,24,0.6)]"
+                    : "border-[#4A090D]/25 shadow-[0_30px_70px_-50px_rgba(23,19,19,0.55)]",
                 )}
               >
-                <SaduDivider featured={tier.featured} />
+                <TatreezBorder
+                  variant={tier.featured ? "floral" : "diamonds"}
+                  height={24}
+                  animated
+                />
 
-                <div className="flex flex-1 flex-col gap-6 p-7">
-                  <div>
+                <div className="relative flex flex-1 flex-col gap-6 overflow-hidden p-7">
+                  {/* large tatreez medallion woven behind the copy */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -top-8 -right-12 select-none opacity-[0.09]"
+                  >
+                    {tier.featured ? (
+                      <TatreezFloralPattern className="h-56 w-56" />
+                    ) : (
+                      <TatreezDiamondPattern className="h-52 w-52" />
+                    )}
+                  </div>
+                  {/* ivory wash keeps the content fully legible over the stitching */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#F4EFE7] via-[#F4EFE7]/80 to-[#F4EFE7]/70"
+                  />
+
+                  <div className="relative">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-display text-2xl text-blayz-ink">
+                      <h3 className="font-display text-2xl text-[#171313]">
                         {tier.name}
                       </h3>
                       {configured ? (
-                        <span className="rounded-full bg-blayz-ink px-2.5 py-1 font-mono text-[10px] tracking-wide text-blayz-cream uppercase">
+                        <span className="rounded-full bg-[#171313] px-2.5 py-1 font-mono text-[10px] tracking-wide text-[#F4EFE7] uppercase">
                           configured
                         </span>
                       ) : (
                         tier.featured && (
-                          <span className="rounded-full bg-blayz-orange px-2.5 py-1 font-mono text-[10px] tracking-wide text-blayz-cream uppercase">
+                          <span className="rounded-full bg-[#7A1118] px-2.5 py-1 font-mono text-[10px] tracking-wide text-[#F4EFE7] uppercase">
                             popular
                           </span>
                         )
@@ -87,24 +115,37 @@ export function Pricing() {
 
                     {configured && estimate ? (
                       <>
-                        <p className="mt-3 font-mono text-3xl text-blayz-orange">
-                          {headlineFigure(estimate)}
+                        <p className="mt-3 font-mono text-3xl text-[#7A1118]">
+                          <Money value={headlineFigure(estimate)} />
                         </p>
-                        <p className="font-mono text-xs text-blayz-ink/40">
-                          {estimate.once && estimate.monthly
-                            ? `your build + ${headlineFigure({ once: null, monthly: estimate.monthly })}/mo`
-                            : estimate.monthly
-                              ? "/ month"
-                              : "your build"}
+                        <p className="font-mono text-xs text-[#4A090D]/55">
+                          {estimate.once && estimate.monthly ? (
+                            <>
+                              your build +{" "}
+                              <Money
+                                value={headlineFigure({
+                                  once: null,
+                                  monthly: estimate.monthly,
+                                })}
+                                weight="regular"
+                                symbolSize="0.9em"
+                              />
+                              /mo
+                            </>
+                          ) : estimate.monthly ? (
+                            "/ month"
+                          ) : (
+                            "your build"
+                          )}
                         </p>
                       </>
                     ) : (
                       <>
-                        <p className="mt-3 font-mono text-3xl text-blayz-orange">
-                          {tier.price}
+                        <p className="mt-3 font-mono text-3xl text-[#7A1118]">
+                          <Money value={tier.price} />
                         </p>
                         {tier.cadence && (
-                          <p className="font-mono text-xs text-blayz-ink/40">
+                          <p className="font-mono text-xs text-[#4A090D]/55">
                             / {tier.cadence}
                           </p>
                         )}
@@ -112,32 +153,33 @@ export function Pricing() {
                     )}
                   </div>
 
-                  <p className="font-sans text-sm text-blayz-ink/70">
+                  <p className="relative font-sans text-sm text-[#171313]/75">
                     {tier.blurb}
                   </p>
 
-                  <ul className="flex flex-col gap-2.5">
+                  <ul className="relative flex flex-col gap-2.5">
                     {tier.features.map((feat) => (
                       <li
                         key={feat}
-                        className="flex items-start gap-2 font-sans text-sm text-blayz-ink/80"
+                        className="flex items-start gap-2.5 font-sans text-sm text-[#171313]/85"
                       >
-                        <span className="mt-0.5 font-mono text-blayz-orange">
-                          ◆
-                        </span>
+                        <span
+                          aria-hidden
+                          className="mt-1.5 size-1.5 shrink-0 rotate-45 bg-[#7A1118]"
+                        />
                         {feat}
                       </li>
                     ))}
                   </ul>
 
-                  <div className="mt-auto flex flex-col gap-2">
+                  <div className="relative mt-auto flex flex-col gap-2">
                     <button
                       onClick={() => setOpenTier(tier.id)}
                       className={clsx(
                         "w-full rounded-lg py-3 font-mono text-sm transition-colors",
                         tier.featured && !configured
-                          ? "bg-blayz-orange text-blayz-cream hover:bg-blayz-ink"
-                          : "border border-blayz-ink/20 text-blayz-ink hover:border-blayz-orange hover:text-blayz-orange",
+                          ? "bg-[#7A1118] text-[#F4EFE7] hover:bg-[#4A090D]"
+                          : "border border-[#4A090D]/30 text-[#171313] hover:border-[#7A1118] hover:text-[#7A1118]",
                       )}
                     >
                       {configured ? "< reconfigure />" : "⟶ configure build"}
@@ -151,7 +193,7 @@ export function Pricing() {
                             message: buildSummary(tier, config),
                           })
                         }
-                        className="w-full rounded-lg bg-blayz-orange py-3 font-mono text-sm text-blayz-cream transition-colors hover:bg-blayz-ink"
+                        className="w-full rounded-lg bg-[#7A1118] py-3 font-mono text-sm text-[#F4EFE7] transition-colors hover:bg-[#4A090D]"
                       >
                         &lt; request this build /&gt;
                       </button>
@@ -159,7 +201,12 @@ export function Pricing() {
                   </div>
                 </div>
 
-                <SaduDivider flip featured={tier.featured} />
+                <TatreezBorder
+                  variant={tier.featured ? "floral" : "diamonds"}
+                  height={24}
+                  animated
+                  flip
+                />
               </motion.div>
             );
           })}
@@ -180,42 +227,5 @@ export function Pricing() {
         )}
       </AnimatePresence>
     </section>
-  );
-}
-
-/** Horizontal Sadu zigzag/diamond band (PRD §7.4). */
-function SaduDivider({
-  flip = false,
-  featured = false,
-}: {
-  flip?: boolean;
-  featured?: boolean;
-}) {
-  const c1 = "var(--blayz-orange)";
-  const c2 = "var(--blayz-gold)";
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 120 12"
-      preserveAspectRatio="none"
-      className={clsx("h-3 w-full", flip && "rotate-180")}
-    >
-      <defs>
-        <pattern
-          id={`sadu-${flip ? "b" : "t"}-${featured ? "f" : "n"}`}
-          width="12"
-          height="12"
-          patternUnits="userSpaceOnUse"
-        >
-          <path d="M0 12 L6 0 L12 12 Z" fill={c1} />
-          <path d="M6 12 L12 6 L12 12 Z" fill={c2} opacity="0.6" />
-        </pattern>
-      </defs>
-      <rect
-        width="120"
-        height="12"
-        fill={`url(#sadu-${flip ? "b" : "t"}-${featured ? "f" : "n"})`}
-      />
-    </svg>
   );
 }
