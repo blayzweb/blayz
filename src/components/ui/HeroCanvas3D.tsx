@@ -6,22 +6,6 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
-// Interface for Particle trajectories
-interface Particle3D {
-  mesh: THREE.Mesh;
-  startX: number;
-  startY: number;
-  startZ: number;
-  endX: number;
-  endY: number;
-  endZ: number;
-  rotSpeedX: number;
-  rotSpeedY: number;
-  rotSpeedZ: number;
-  scaleStart: number;
-  scaleEnd: number;
-}
-
 export interface HeroCanvas3DHandle {
   laptopGroup: THREE.Group | null;
   lidGroup: THREE.Object3D | null;
@@ -35,7 +19,7 @@ export interface HeroCanvas3DHandle {
     uColorWhite: { value: THREE.Color };
   };
   screenGlowLight: THREE.PointLight | null;
-  particleProxy: { progress: number };
+  saduTargetScaleX: number;
 }
 
 export interface HeroCanvas3DProps {
@@ -51,19 +35,16 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
   const saduGroupRef = useRef<THREE.Group | null>(null);
   const logoGroupRef = useRef<THREE.Group | null>(null);
   const screenGlowLightRef = useRef<THREE.PointLight | null>(null);
+  const saduTargetScaleXRef = useRef<number>(1.0);
 
   // Logo material uniforms
   const logoUniforms = useRef({
     uProgress: { value: 0.0 },
-    uMinX: { value: 0.0 },
+    uMinX: { value: -5.0 }, // default bounds
     uMaxX: { value: 0.0 },
     uColorOrange: { value: new THREE.Color("#FA3602") },
     uColorWhite: { value: new THREE.Color("#FFFFFF") },
   });
-
-  // Particle tracking
-  const particleProxy = useRef({ progress: 0.0 });
-  const particlesList = useRef<Particle3D[]>([]);
 
   useImperativeHandle(ref, () => ({
     get laptopGroup() { return laptopGroupRef.current; },
@@ -72,7 +53,7 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
     get logoGroup() { return logoGroupRef.current; },
     logoUniforms: logoUniforms.current,
     get screenGlowLight() { return screenGlowLightRef.current; },
-    get particleProxy() { return particleProxy.current; },
+    get saduTargetScaleX() { return saduTargetScaleXRef.current; },
   }));
 
   useEffect(() => {
@@ -104,7 +85,7 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
     laptopGroupRef.current = laptopGroup;
 
     const saduGroup = new THREE.Group();
-    saduGroup.position.set(2.4, -0.2, 0.05); // positioned near screen plane
+    saduGroup.position.set(1.2, -0.2, 0.05); // positioned near screen plane of sideways laptop
     scene.add(saduGroup);
     saduGroupRef.current = saduGroup;
 
@@ -114,17 +95,18 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
     logoGroupRef.current = logoGroup;
 
     // 2. Lighting Setup
-    const ambientLight = new THREE.AmbientLight("#fff3eb", 0.75); // warm soft ambient
+    const ambientLight = new THREE.AmbientLight("#ffffff", 1.0); // bright ambient
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight("#ffffff", 1.8); // crisp key light
+    const dirLight = new THREE.DirectionalLight("#ffffff", 1.5); // key light from top right
     dirLight.position.set(5, 8, 4);
     dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
-    dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 25;
     scene.add(dirLight);
+
+    // Dedicated directional light directly in front of the logo to keep colors bright
+    const logoLight = new THREE.DirectionalLight("#ffffff", 1.6);
+    logoLight.position.set(-3.5, 2.0, 5.0);
+    scene.add(logoLight);
 
     // Warm red/orange point light inside the laptop screen to simulate screen glow
     const screenGlowLight = new THREE.PointLight("#ff3800", 0.0, 6); // starts off
@@ -147,12 +129,11 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
         model.scale.set(0.9, 0.9, 0.9);
         model.position.set(0, 0, 0);
         
-        // Enable shadows
+        // Enable shadows and style standard materials
         model.traverse((child) => {
           if (child instanceof THREE.Mesh) {
             child.castShadow = true;
             child.receiveShadow = true;
-            // enhance material premium feel
             if (child.material instanceof THREE.MeshStandardMaterial) {
               child.material.roughness = 0.25;
               child.material.metalness = 0.8;
@@ -182,18 +163,61 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
       (gltf) => {
         const ribbon = gltf.scene;
         
-        // Adjust the ribbon's orientation and scale
-        // Ribbon starts flat-scaled along its main extension direction (Z or X)
-        // Let's position it to emerge directly from the laptop screen screenflip plane
-        ribbon.scale.set(0.001, 0.001, 0.001); // starts hidden
+        // Measure model dimensions
+        const box = new THREE.Box3().setFromObject(ribbon);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        console.log("Original Sadu ribbon size:", size);
+
+        // Sort axes to find length (longest) and height (second longest)
+        const axes = [
+          { name: "x" as const, val: size.x },
+          { name: "y" as const, val: size.y },
+          { name: "z" as const, val: size.z }
+        ];
+        axes.sort((a, b) => b.val - a.val);
+
+        const lengthAxis = axes[0].name;
+        const heightAxis = axes[1].name;
+
+        // Scale so height is exactly 0.55 units in our scene
+        const targetHeight = 0.55;
+        const scaleFactor = targetHeight / axes[1].val;
+        ribbon.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+        // Compute local box after scaling to offset hinge to origin
+        const scaledBox = new THREE.Box3().setFromObject(ribbon);
+        const scaledSize = new THREE.Vector3();
+        scaledBox.getSize(scaledSize);
         
+        // The Sadu ribbon starts at the laptop (on the right) and grows leftwards (negative direction).
+        // Align ribbon start edge (max length value) to origin [0,0,0] so it extends leftwards when scaled.
+        if (lengthAxis === "x") {
+          ribbon.position.x = -scaledBox.max.x;
+        } else if (lengthAxis === "z") {
+          // Rotate 90 deg around Y to align Z length axis with scene X axis
+          ribbon.rotation.y = Math.PI / 2;
+          const rotatedBox = new THREE.Box3().setFromObject(ribbon);
+          ribbon.position.x = -rotatedBox.max.x;
+        } else if (lengthAxis === "y") {
+          // Rotate 90 deg around Z to align Y length axis with scene X axis
+          ribbon.rotation.z = Math.PI / 2;
+          const rotatedBox = new THREE.Box3().setFromObject(ribbon);
+          ribbon.position.x = -rotatedBox.max.x;
+        }
+
+        // Target distance from laptop screen (x = 1.2) to logo center (x = -2.4) is 3.6 units.
+        // The normalized length is scaledSize[lengthAxis]
+        const normalizedLength = lengthAxis === "x" ? scaledSize.x : (lengthAxis === "z" ? scaledSize.z : scaledSize.y);
+        saduTargetScaleXRef.current = 3.65 / normalizedLength;
+
         // Traverse to style material
         ribbon.traverse((child) => {
           if (child instanceof THREE.Mesh) {
             child.castShadow = true;
             if (child.material instanceof THREE.MeshStandardMaterial) {
-              child.material.roughness = 0.5;
-              child.material.metalness = 0.1;
+              child.material.roughness = 0.4;
+              child.material.metalness = 0.15;
             }
           }
         });
@@ -224,8 +248,8 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
 
         // Standard material with injected custom shader code for color wipe
         const customMaterial = new THREE.MeshStandardMaterial({
-          roughness: 0.3,
-          metalness: 0.25,
+          roughness: 0.35,
+          metalness: 0.2,
         });
 
         // Modify standard shader with onBeforeCompile
@@ -237,18 +261,18 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
           shader.uniforms.uColorWhite = logoUniforms.current.uColorWhite;
 
           shader.vertexShader = `
-            varying vec3 vLocalPosition;
+            varying vec3 vWorldPosition;
             ${shader.vertexShader}
           `.replace(
             "#include <begin_vertex>",
             `
             #include <begin_vertex>
-            vLocalPosition = position;
+            vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
             `
           );
 
           shader.fragmentShader = `
-            varying vec3 vLocalPosition;
+            varying vec3 vWorldPosition;
             uniform float uProgress;
             uniform float uMinX;
             uniform float uMaxX;
@@ -260,14 +284,14 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
             `
             #include <color_fragment>
             
-            // Normalize current local position X
-            float progressX = (vLocalPosition.x - uMinX) / (uMaxX - uMinX);
+            // Normalize current fragment X position in world space
+            float progressX = (vWorldPosition.x - uMinX) / (uMaxX - uMinX);
             
             // Cutoff moves from right (1.0) to left (0.0) as uProgress goes from 0.0 to 1.0
             float cutoff = 1.0 - uProgress;
             
-            // Soft gradient boundary width
-            float edgeWidth = 0.03;
+            // Soft gradient boundary width in world space coordinates
+            float edgeWidth = 0.045;
             float mask = smoothstep(cutoff - edgeWidth, cutoff + edgeWidth, progressX);
             
             diffuseColor.rgb = mix(uColorOrange, uColorWhite, mask);
@@ -275,7 +299,6 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
           );
         };
 
-        let mergedGeometry: THREE.BufferGeometry | null = null;
         const geometries: THREE.ExtrudeGeometry[] = [];
 
         paths.forEach((path) => {
@@ -287,8 +310,6 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
         });
 
         if (geometries.length > 0) {
-          // Merge geometries manually or group meshes
-          // To compute simple bounding box across the logo, grouping is clean. We calculate global bounding box:
           geometries.forEach((geo) => {
             const mesh = new THREE.Mesh(geo, customMaterial);
             mesh.castShadow = true;
@@ -305,11 +326,6 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
             child.position.sub(center);
           });
 
-          // Re-compute bounding box of the centered group to set uniforms
-          const reBbox = new THREE.Box3().setFromObject(group);
-          logoUniforms.current.uMinX.value = reBbox.min.x;
-          logoUniforms.current.uMaxX.value = reBbox.max.x;
-
           // Scale the logo to fit scene dimension (SVG units are very large ~1300 width)
           const scaleFactor = 0.0038;
           group.scale.set(scaleFactor, scaleFactor, scaleFactor);
@@ -319,133 +335,28 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
           group.rotation.x = Math.PI;
 
           logoGroup.add(group);
+
+          // Compute global world bounds of logoGroup to set uniforms accurately
+          logoGroup.updateMatrixWorld(true);
+          const worldBbox = new THREE.Box3().setFromObject(logoGroup);
+          logoUniforms.current.uMinX.value = worldBbox.min.x;
+          logoUniforms.current.uMaxX.value = worldBbox.max.x;
         }
       },
       undefined,
       (err) => console.error("Error loading SVG logo:", err)
     );
 
-    // 6. Build Particle System (24 items, flying towards camera)
-    const particleColors = ["#FA3602", "#ffa37a", "#ffc83b", "#ffffff"];
-    const asciiChars = ["< />", "{ }", "[ ]", "◇", "+", "x", "01", "10", "/", "*", "&&", "||"];
-
-    // Sadu diamond geometry
-    const saduGeo = new THREE.BoxGeometry(0.18, 0.18, 0.04);
-    saduGeo.rotateZ(Math.PI / 4); // rotate to look like a Sadu diamond shape
-
-    const createTextTexture = (text: string, color: string) => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 64;
-      canvas.height = 64;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "rgba(0,0,0,0)";
-        ctx.fillRect(0, 0, 64, 64);
-        ctx.font = "bold 24px monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = color;
-        ctx.fillText(text, 32, 32);
-      }
-      const texture = new THREE.CanvasTexture(canvas);
-      return texture;
-    };
-
-    const count = 24;
-    for (let i = 0; i < count; i++) {
-      const isSadu = i % 2 === 0;
-      const color = particleColors[i % particleColors.length];
-      let mesh: THREE.Mesh;
-
-      if (isSadu) {
-        const mat = new THREE.MeshStandardMaterial({
-          color: new THREE.Color(color),
-          roughness: 0.4,
-          metalness: 0.1,
-          transparent: true,
-        });
-        mesh = new THREE.Mesh(saduGeo, mat);
-      } else {
-        const txt = asciiChars[Math.floor(i / 2) % asciiChars.length];
-        const texture = createTextTexture(txt, color);
-        const mat = new THREE.MeshBasicMaterial({
-          map: texture,
-          transparent: true,
-          depthWrite: false,
-          side: THREE.DoubleSide,
-        });
-        mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3), mat);
-      }
-
-      // Hide initially
-      (mesh.material as any).opacity = 0;
-      scene.add(mesh);
-
-      // Trajectories (starting near screen, flying out past screen)
-      const startX = laptopGroup.position.x + (Math.random() - 0.5) * 0.8;
-      const startY = laptopGroup.position.y + 0.3 + (Math.random() - 0.5) * 0.5;
-      const startZ = laptopGroup.position.z + 0.1;
-
-      const angle = Math.random() * Math.PI * 2;
-      const spread = 2.0 + Math.random() * 3.5;
-      const endX = startX + Math.cos(angle) * spread - 1.5;
-      const endY = startY + Math.sin(angle) * spread + 0.5;
-      const endZ = startZ + 6.0 + Math.random() * 3.0; // flies way forward
-
-      particlesList.current.push({
-        mesh,
-        startX,
-        startY,
-        startZ,
-        endX,
-        endY,
-        endZ,
-        rotSpeedX: (Math.random() - 0.5) * 4,
-        rotSpeedY: (Math.random() - 0.5) * 4,
-        rotSpeedZ: (Math.random() - 0.5) * 4,
-        scaleStart: 0.1,
-        scaleEnd: 1.5 + Math.random() * 1.5,
-      });
-    }
-
-    // 7. Render Animation Loop
+    // 6. Render Animation Loop
     let animId = 0;
     const tick = () => {
-      // Update particles position in coordinate space based on scroll progress
-      const pProgress = particleProxy.current.progress;
-      particlesList.current.forEach((p) => {
-        p.mesh.position.x = THREE.MathUtils.lerp(p.startX, p.endX, pProgress);
-        p.mesh.position.y = THREE.MathUtils.lerp(p.startY, p.endY, pProgress);
-        p.mesh.position.z = THREE.MathUtils.lerp(p.startZ, p.endZ, pProgress);
-
-        p.mesh.rotation.x = p.rotSpeedX * pProgress;
-        p.mesh.rotation.y = p.rotSpeedY * pProgress;
-        p.mesh.rotation.z = p.rotSpeedZ * pProgress;
-
-        const currentScale = THREE.MathUtils.lerp(p.scaleStart, p.scaleEnd, pProgress);
-        p.mesh.scale.setScalar(currentScale);
-
-        // Opacity fade in/out
-        if (pProgress <= 0.05) {
-          (p.mesh.material as any).opacity = 0;
-        } else if (pProgress > 0.05 && pProgress <= 0.2) {
-          (p.mesh.material as any).opacity = (pProgress - 0.05) / 0.15;
-        } else if (pProgress > 0.2 && pProgress <= 0.6) {
-          (p.mesh.material as any).opacity = 1.0;
-        } else if (pProgress > 0.6 && pProgress <= 0.95) {
-          (p.mesh.material as any).opacity = Math.max(0, 1.0 - (pProgress - 0.6) / 0.35);
-        } else {
-          (p.mesh.material as any).opacity = 0;
-        }
-      });
-
       renderer.render(scene, camera);
       animId = requestAnimationFrame(tick);
     };
 
     tick();
 
-    // 8. Responsive Resize Listener
+    // 7. Responsive Resize Listener
     const handleResize = () => {
       if (!container) return;
       const w = container.clientWidth;
@@ -463,7 +374,15 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
       } else {
         laptopGroup.position.set(2.4, -0.6, 0);
         logoGroup.position.set(-2.4, 0.4, 0);
-        saduGroup.position.set(2.4, -0.2, 0.05);
+        saduGroup.position.set(1.2, -0.2, 0.05); // aligned near vertical screen of rotated laptop
+      }
+
+      // Re-calculate world bounds of logoGroup on resize/re-render to maintain shader integrity
+      if (logoGroup.children.length > 0) {
+        logoGroup.updateMatrixWorld(true);
+        const worldBbox = new THREE.Box3().setFromObject(logoGroup);
+        logoUniforms.current.uMinX.value = worldBbox.min.x;
+        logoUniforms.current.uMaxX.value = worldBbox.max.x;
       }
     };
     window.addEventListener("resize", handleResize);
@@ -472,7 +391,7 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
     // Trigger onReady to let the parent know the WebGL canvas is mounted and refs are populated
     props.onReady?.();
 
-    // 9. Cleanup
+    // 8. Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animId);
@@ -480,19 +399,6 @@ export const HeroCanvas3D = forwardRef<HeroCanvas3DHandle, HeroCanvas3DProps>((p
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
-      
-      // Dispose geometries & materials
-      saduGeo.dispose();
-      particlesList.current.forEach((p) => {
-        if (p.mesh instanceof THREE.Mesh) {
-          p.mesh.geometry.dispose();
-          if (Array.isArray(p.mesh.material)) {
-            p.mesh.material.forEach((m) => m.dispose());
-          } else {
-            p.mesh.material.dispose();
-          }
-        }
-      });
     };
   }, []);
 

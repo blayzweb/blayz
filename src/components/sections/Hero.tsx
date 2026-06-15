@@ -53,12 +53,11 @@ export function Hero() {
           laptopPositionY: -0.6,
           laptopScale: 0.9,
           saduScaleScalar: 0.001,
-          saduPositionX: 2.4,
+          saduPositionX: 1.2,
           saduPositionY: -0.2,
           glowIntensity: 0.0,
           logoWipe: 0.0,
           logoScale: 1.0,
-          particleProgress: 0.0,
         };
 
         const tl = gsap.timeline({
@@ -79,7 +78,12 @@ export function Hero() {
               canvas.laptopGroup.scale.setScalar(animProxy.laptopScale);
             }
             if (canvas.saduGroup) {
-              canvas.saduGroup.scale.setScalar(animProxy.saduScaleScalar);
+              // Scale along X to stretch ribbon, while keeping Y and Z at normal height/thickness
+              canvas.saduGroup.scale.set(
+                animProxy.saduScaleScalar * canvas.saduTargetScaleX,
+                animProxy.saduScaleScalar,
+                animProxy.saduScaleScalar
+              );
               canvas.saduGroup.position.x = animProxy.saduPositionX;
               canvas.saduGroup.position.y = animProxy.saduPositionY;
             }
@@ -88,7 +92,6 @@ export function Hero() {
             }
             canvas.logoUniforms.uProgress.value = animProxy.logoWipe;
             if (canvas.screenGlowLight) canvas.screenGlowLight.intensity = animProxy.glowIntensity;
-            canvas.particleProxy.progress = animProxy.particleProgress;
           }
         });
 
@@ -102,14 +105,11 @@ export function Hero() {
         // Frame 3: Screen glow starts (0.8s -> 1.3s)
         tl.to(animProxy, { glowIntensity: 4.5, duration: 0.5 }, 0.8);
 
-        // Frame 3: Particles launch towards the viewer (1.0s -> 2.2s)
-        tl.to(animProxy, { particleProgress: 1.0, ease: "power1.out", duration: 1.2 }, 1.0);
-
         // Frame 4: Laptop rotates sideways to face the left (2.2s -> 3.0s)
         tl.to(animProxy, { laptopRotationY: 1.35, laptopRotationX: 0.0, laptopRotationZ: 0.0, ease: "power2.inOut", duration: 0.8 }, 2.2);
 
         // Frame 4 -> Frame 5: Sadu ribbon emerges from screen and grows leftwards (2.2s -> 3.2s)
-        tl.to(animProxy, { saduScaleScalar: 4.8, saduPositionX: -0.45, ease: "power2.inOut", duration: 1.0 }, 2.2);
+        tl.to(animProxy, { saduScaleScalar: 1.0, ease: "power2.inOut", duration: 1.0 }, 2.2);
 
         // Frame 5: Logo turns white in WebGL via uProgress uniform (2.55s -> 3.1s)
         tl.to(animProxy, { logoWipe: 1.0, duration: 0.55, ease: "none" }, 2.55);
@@ -160,7 +160,6 @@ export function Hero() {
           lidRotationX: 1.6,
           laptopRotationY: -0.3,
           glowIntensity: 0.0,
-          particleProgress: 0.0,
         };
 
         const tl = gsap.timeline({
@@ -174,7 +173,6 @@ export function Hero() {
             if (canvas.lidGroup) canvas.lidGroup.rotation.x = mobileProxy.lidRotationX;
             if (canvas.laptopGroup) canvas.laptopGroup.rotation.y = mobileProxy.laptopRotationY;
             if (canvas.screenGlowLight) canvas.screenGlowLight.intensity = mobileProxy.glowIntensity;
-            canvas.particleProxy.progress = mobileProxy.particleProgress;
           }
         });
 
@@ -183,9 +181,6 @@ export function Hero() {
 
         // Screen glows
         tl.to(mobileProxy, { glowIntensity: 3.5, duration: 0.8 }, 0.2);
-
-        // Launch particles
-        tl.to(mobileProxy, { particleProgress: 1.0, ease: "power1.out", duration: 1.2 }, 0.3);
       });
 
       return () => {
