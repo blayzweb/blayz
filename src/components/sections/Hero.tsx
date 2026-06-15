@@ -7,11 +7,11 @@ import { HeroIndex } from "@/components/nav/HeroIndex";
 import { useSite } from "@/components/providers/SiteProvider";
 import { Logo } from "@/components/ui/Logo";
 import dynamic from "next/dynamic";
-import { type HeroCanvas3DHandle } from "@/components/ui/HeroCanvas3D";
+import { type HeroCanvas3DHandle } from "@/components/ui/HeroCanvasR3F";
 
 // Dynamically load the WebGL Canvas to prevent SSR issues
-const HeroCanvas3D = dynamic(
-  () => import("@/components/ui/HeroCanvas3D").then((mod) => mod.HeroCanvas3D),
+const HeroCanvasR3F = dynamic(
+  () => import("@/components/ui/HeroCanvasR3F").then((mod) => mod.HeroCanvasR3F),
   { ssr: false }
 );
 
@@ -25,6 +25,8 @@ export function Hero() {
   const desktopTextRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HeroCanvas3DHandle>(null);
   const [canvasReady, setCanvasReady] = useState(false);
+
+  typeof window !== "undefined" && ((window as any).canvasRef = canvasRef);
 
   useGSAP(
     () => {
@@ -200,7 +202,7 @@ export function Hero() {
       <div className="arabesque-watermark pointer-events-none absolute inset-0 opacity-[0.05]" />
 
       {/* WebGL Three.js Canvas centerpiece (Desktop/Tablet/Mobile compatible) */}
-      {introDone && <HeroCanvas3D ref={canvasRef} onReady={() => setCanvasReady(true)} />}
+      {introDone && <HeroCanvasR3F ref={canvasRef} onReady={() => setCanvasReady(true)} />}
 
       {/* 1. DESKTOP OVERLAY LAYOUT (min-width: 1024px) */}
       <div className="hidden lg:grid grid-cols-2 w-full h-screen items-center justify-between relative max-w-7xl mx-auto z-10 px-12 pointer-events-none">
