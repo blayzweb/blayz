@@ -68,38 +68,35 @@ const KEYFRAMES = {
     { at: 1,   value: 0.15 },
   ],
   laptopPositionY: [
-    { at: 0,    value: -0.26 },  // resting
-    { at: 0.2,  value: -0.26 },  // lifts (frame 2)
-    { at: 0.65, value: -0.22 },
-    { at: 1,    value: -0.24 },
+    { at: 0,    value: -0.28 },  // resting base level
+    { at: 1,    value: -0.28 },
   ],
   laptopPositionX: [
-    { at: 0,   value: 1.2 },    // right side (frame 1)
-    { at: 0.65, value: 0.8 },
-    { at: 1,   value: 0.7 },
+    { at: 0,   value: 1.2 },    // fixed on the right
+    { at: 1,   value: 1.2 },
   ],
   laptopScale: [
-    { at: 0,   value: 0.18 },
-    { at: 1,   value: 0.14 },    // recedes slightly by the end
+    { at: 0,   value: 0.24 },   // increased size, no janky resizing
+    { at: 1,   value: 0.24 },
   ],
 
   // Sadu ribbon — "emerges from nothing" at the screen, travels left
   saduScaleScalar: [
     { at: 0,    value: 0.001 }, // invisible
     { at: 0.45, value: 0.001 }, // still invisible until screen is open
-    { at: 0.55, value: 0.39 },   // emerging
-    { at: 0.85, value: 1.3 },   // full size
-    { at: 1,    value: 1.3 },
+    { at: 0.46, value: 1.6 },   // protrudes instantly at full required size
+    { at: 1,    value: 1.6 },
   ],
   saduPositionX: [
-    { at: 0.45, value: 1.1 },   // at the screen
-    { at: 0.65, value: 0.2 },   // traveling toward logo
-    { at: 0.85, value: -0.9 },  // crossing the logo's x-position
-    { at: 1,    value: -1.8 },  // fully past, off toward header
+    { at: 0,    value: 2.72 },   // hidden off-screen to the right
+    { at: 0.45, value: 2.72 },   // left edge is exactly at the screen center (1.2)
+    { at: 0.65, value: 0.2 },    // traveling toward logo
+    { at: 0.85, value: -0.9 },   // crossing the logo's x-position
+    { at: 1,    value: -1.8 },   // fully past
   ],
   saduPositionY: [
-    { at: 0.45, value: 0.0 },
-    { at: 1,    value: 0.0 },
+    { at: 0.45, value: 0.08 },   // starts at laptop screen center height
+    { at: 1,    value: 0.0 },    // settles to logo center height
   ],
 
   // Screen glow (point light) — flares as the lid opens
@@ -112,12 +109,11 @@ const KEYFRAMES = {
 
   // Logo wipe progress — drives the white-overlay clip-path, 0 = fully
   // orange, 1 = fully white. Synced to when the Sadu ribbon's x-position
-  // crosses the logo's x-position on screen (~0.8–0.95 range; tune against
-  // saduPositionX above and the logo's actual screen position).
+  // crosses the logo's x-position on screen (~0.60–0.76 range).
   logoWipe: [
     { at: 0,    value: 0 },
-    { at: 0.8,  value: 0 },
-    { at: 0.95, value: 1 },
+    { at: 0.60, value: 0 },
+    { at: 0.76, value: 1 },
     { at: 1,    value: 1 },
   ],
 } as const;
@@ -159,11 +155,11 @@ export default function Hero() {
     laptopRotationY: -0.2,
     laptopRotationZ: 0,
     laptopPositionX: 1.2,
-    laptopPositionY: -0.26,
-    laptopScale: 0.18,
+    laptopPositionY: -0.28,
+    laptopScale: 0.24,
     saduScaleScalar: 0.001,
-    saduPositionX: 1.1,
-    saduPositionY: 0.0,
+    saduPositionX: 2.72,
+    saduPositionY: 0.08,
     glowIntensity: 0,
     logoWipe: 0,
   }));
