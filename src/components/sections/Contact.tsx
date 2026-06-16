@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useSite } from "@/components/providers/SiteProvider";
-import { AsciiFlames } from "@/components/ui/AsciiFlames";
-
 type Status = "idle" | "submitting" | "success" | "error";
 
 const PROJECT_TYPES = [
@@ -211,47 +209,6 @@ export function Contact() {
 
             <p className="font-kufi text-lg text-blayz-orange" dir="rtl">
               صُنع بالشغف
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ASCII flame footer — Blayz, set ablaze. */}
-      <div
-        className="relative -mx-6 -mb-16 mt-24 h-[34rem] overflow-hidden"
-        style={{
-          // Darkness fades in gradually over the top half, revealing the cream
-          // page above; no hard seam, no grey band — the fire carries the blend.
-          background:
-            "linear-gradient(to bottom, transparent 0%, transparent 8%, var(--blayz-ink) 56%, var(--blayz-ink) 100%)",
-        }}
-      >
-        {/* the fire fills the whole band; the canvas ramps the flames in over
-            the same span the darkness fades, so they emerge together */}
-        <div className="pointer-events-none absolute inset-0">
-          <AsciiFlames className="h-full w-full" />
-        </div>
-
-        {/* closing wordmark — echoes the brand cover's opening <blayz>,
-            emerging from the fire (blayz = blaze) */}
-        <div className="relative z-10 flex h-full flex-col items-center justify-end px-6 pb-20 text-center">
-          <div className="relative flex flex-col items-center gap-3">
-            {/* soft radial scrim wrapped around the brand so it always tracks
-                the text and reads cleanly over the flames */}
-            <div className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-44 w-[40rem] max-w-[94vw] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(26,26,26,0.72)_0%,rgba(26,26,26,0.4)_46%,transparent_78%)]" />
-            <span
-              className={`wordmark text-5xl text-blayz-cream sm:text-6xl ${
-                reduced ? "" : "transition-colors hover:text-blayz-orange"
-              }`}
-              style={{ textShadow: "0 2px 24px rgba(26,26,26,0.92)" }}
-            >
-              &lt;/blayz&gt;
-            </span>
-            <p
-              className="font-mono text-xs text-blayz-cream/55"
-              style={{ textShadow: "0 1px 12px rgba(26,26,26,0.95)" }}
-            >
-              © {new Date().getFullYear()} Blayz — crafted with code &amp; culture
             </p>
           </div>
         </div>

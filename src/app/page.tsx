@@ -11,6 +11,7 @@ import { AboutUs } from "@/components/sections/AboutUs";
 import { Services } from "@/components/sections/Services";
 import { Pricing } from "@/components/sections/Pricing";
 import { Contact } from "@/components/sections/Contact";
+import { Footer } from "@/components/sections/Footer";
 
 function HomeContent() {
   const { introDone } = useSite();
@@ -34,6 +35,7 @@ function HomeContent() {
           <Services />
           <Pricing />
           <Contact />
+          <Footer />
         </main>
       </div>
     </>
