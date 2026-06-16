@@ -55,11 +55,6 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
 
   // Drive Lenis from GSAP's ticker so scroll + ScrollTrigger stay in sync.
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      (window as any).ScrollTrigger = ScrollTrigger;
-      (window as any).gsap = gsap;
-    }
-
     function raf(time: number) {
       lenisRef.current?.lenis?.raf(time * 1000);
     }
@@ -75,15 +70,10 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     const lenis = lenisRef.current?.lenis;
     if (!lenis) return;
 
-    if (typeof window !== "undefined") {
-      (window as any).lenis = lenis;
-    }
-
     const onScroll = () => {
       ScrollTrigger.update();
 
-      const isDesktop = window.innerWidth >= 1024;
-      const heroThreshold = isDesktop ? window.innerHeight * 1.8 : window.innerHeight * 0.9;
+      const heroThreshold = window.innerHeight * 0.9;
       setScrolled(window.scrollY > heroThreshold);
 
       // Active section: last section whose top has crossed the viewport midline.

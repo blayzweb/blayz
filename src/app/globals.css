@@ -96,6 +96,7 @@ html.lenis body {
   background-size: 480px;
 }
 
+
 ::selection {
   background: var(--blayz-orange);
   color: var(--blayz-cream);

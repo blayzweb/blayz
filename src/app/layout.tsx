@@ -65,6 +65,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${display.variable} ${satoshi.variable} ${jetbrainsMono.variable} ${reemKufi.variable} antialiased`}
+      suppressHydrationWarning
     >
       <body>{children}</body>
     </html>
