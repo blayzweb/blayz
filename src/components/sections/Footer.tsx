@@ -2,6 +2,8 @@
 
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { AsciiFlames } from "@/components/ui/AsciiFlames";
+import { FooterLegalLinks } from "@/components/ui/footer-legal-links";
+import { FooterSocialLinks } from "@/components/ui/footer-social-links";
 
 /**
  * Footer component (PRD §7.5). Hosts the closing </blayz> wordmark and the
@@ -11,15 +13,15 @@ export function Footer() {
   const reduced = useReducedMotion();
 
   return (
-    <footer className="relative h-[24rem] overflow-hidden bg-blayz-ink">
+    <footer className="relative min-h-[16rem] overflow-hidden bg-blayz-ink sm:min-h-[18rem]">
       {/* ASCII flame fire effect */}
       <div className="pointer-events-none absolute inset-0">
         <AsciiFlames className="h-full w-full" />
       </div>
 
       {/* closing wordmark */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-end px-6 pb-16 text-center">
-        <div className="relative flex flex-col items-center gap-3">
+      <div className="relative z-10 flex min-h-[16rem] flex-col items-center justify-end px-6 pb-10 text-center sm:min-h-[18rem] sm:pb-12">
+        <div className="relative flex w-full max-w-2xl flex-col items-center gap-4">
           {/* soft radial scrim wrapped around the brand so it always tracks
               the text and reads cleanly over the flames */}
           <div className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-44 w-[40rem] max-w-[94vw] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(26,26,26,0.72)_0%,rgba(26,26,26,0.4)_46%,transparent_78%)]" />
@@ -31,12 +33,14 @@ export function Footer() {
           >
             &lt;/blayz&gt;
           </span>
+          <FooterSocialLinks />
           <p
             className="font-mono text-xs text-blayz-cream/55"
             style={{ textShadow: "0 1px 12px rgba(26,26,26,0.95)" }}
           >
             © {new Date().getFullYear()}{" "}Blayz — crafted with code &amp; culture
           </p>
+          <FooterLegalLinks />
         </div>
       </div>
     </footer>
