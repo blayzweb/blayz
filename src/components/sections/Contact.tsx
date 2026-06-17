@@ -140,10 +140,6 @@ export function Contact() {
       <div className="arabesque-watermark pointer-events-none absolute inset-0 opacity-[0.07]" />
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 right-0 h-[28rem] w-[28rem] rounded-full bg-blayz-peach/35 blur-3xl"
-      />
-      <div
-        aria-hidden
         className="pointer-events-none absolute bottom-0 -left-24 h-80 w-80 rounded-full bg-blayz-sky/30 blur-3xl"
       />
 
