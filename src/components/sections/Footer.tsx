@@ -1,9 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { AsciiFlames } from "@/components/ui/AsciiFlames";
 import { FooterLegalLinks } from "@/components/ui/footer-legal-links";
 import { FooterSocialLinks } from "@/components/ui/footer-social-links";
+import { LegalDocumentModal } from "@/components/legal/LegalDocumentModal";
+import { legalDocuments } from "@/content/legal-documents";
+import type { LegalDocumentId } from "@/content/legal-types";
 
 /**
  * Footer component (PRD §7.5). Hosts the closing </blayz> wordmark and the
@@ -11,6 +16,7 @@ import { FooterSocialLinks } from "@/components/ui/footer-social-links";
  */
 export function Footer() {
   const reduced = useReducedMotion();
+  const [legalOpen, setLegalOpen] = useState<LegalDocumentId | null>(null);
 
   return (
     <footer className="relative min-h-[16rem] overflow-hidden bg-blayz-ink sm:min-h-[18rem]">
@@ -40,9 +46,18 @@ export function Footer() {
           >
             © {new Date().getFullYear()}{" "}Blayz — crafted with code &amp; culture
           </p>
-          <FooterLegalLinks />
+          <FooterLegalLinks onLegalOpen={setLegalOpen} />
         </div>
       </div>
+
+      <AnimatePresence>
+        {legalOpen ? (
+          <LegalDocumentModal
+            legal={legalDocuments[legalOpen]}
+            onClose={() => setLegalOpen(null)}
+          />
+        ) : null}
+      </AnimatePresence>
     </footer>
   );
 }
