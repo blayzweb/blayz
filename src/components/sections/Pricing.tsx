@@ -45,8 +45,8 @@ export function Pricing() {
           Woven to fit — pick a tier, then build it your way.
         </h2>
         <p className="mb-16 max-w-xl font-sans text-base leading-relaxed text-blayz-ink/65 sm:text-lg">
-          Start from a tier and configure add-ons like a custom order — watch the
-          build and your estimate update in real time.
+          Fixed AED pricing built for UAE SMEs — start from a tier, add what you
+          need, and watch your estimate update in real time.
         </p>
 
         <div className="grid gap-8 lg:grid-cols-3">
@@ -107,7 +107,7 @@ export function Pricing() {
                       ) : (
                         tier.featured && (
                           <span className="rounded-full bg-[#7A1118] px-3 py-1 font-mono text-xs tracking-wide text-[#F4EFE7] uppercase">
-                            popular
+                            best value
                           </span>
                         )
                       )}

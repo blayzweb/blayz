@@ -20,7 +20,7 @@ export function Header() {
           <motion.button
             layoutId="blayz-logo"
             onClick={() => scrollTo("hero")}
-            className="pointer-events-auto absolute top-4 left-5 w-12 h-6 text-blayz-orange sm:left-8 flex items-center justify-center"
+            className="pointer-events-auto absolute top-2.5 left-5 flex h-12 w-24 items-center justify-center text-blayz-orange sm:left-8"
             aria-label="Blayz — back to top"
             transition={{ type: "spring", stiffness: 220, damping: 26 }}
           >

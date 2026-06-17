@@ -12,7 +12,7 @@ export type PreviewKey =
   | "booking"
   | "maintenance";
 
-export type TierId = "launch" | "studio" | "partner";
+export type TierId = "starter" | "business" | "premium";
 
 export interface PricingTier {
   id: TierId;
@@ -44,121 +44,205 @@ export interface Addon {
 
 export const PRICING_TIERS: PricingTier[] = [
   {
-    id: "launch",
-    name: "Launch",
-    price: "from 4k",
-    cadence: "fixed scope",
-    blurb: "A sharp one-pager or landing site that makes a brand look inevitable.",
+    id: "starter",
+    name: "Starter",
+    price: "1,999",
+    cadence: "one-time",
+    blurb:
+      "For micro-businesses, freelancers, and side hustles that need a credible online presence — fast.",
     features: [
-      "Up to 3 sections / pages",
-      "Brand-led visual design",
-      "Next.js build + deploy",
-      "Basic analytics & SEO",
+      "5 pages (Home, About, Services, Contact + 1)",
+      "Mobile-responsive, customized template",
+      "Contact form + social links + Google Maps",
+      "Basic on-page SEO + free SSL",
+      "1 round of revisions",
+      "Delivery in 3–5 business days",
     ],
-    base: [4000, 6000],
+    base: [1999, 1999],
     unit: "once",
   },
   {
-    id: "studio",
-    name: "Studio",
-    price: "from 12k",
-    cadence: "project",
-    blurb: "Full site or product surface with a bespoke system and motion.",
+    id: "business",
+    name: "Business",
+    price: "3,999",
+    cadence: "one-time",
+    blurb:
+      "For SMEs, clinics, gyms, and growing brands that need a professional presence with room to grow.",
     features: [
-      "Multi-page / app architecture",
-      "Custom design system",
-      "Scroll & micro-interactions",
-      "CMS + integrations",
-      "Performance pass",
+      "8 pages (Home, About, Services, Gallery, Blog, Contact + 2)",
+      "Custom design — no templates",
+      "CMS integration (client-editable)",
+      "WhatsApp chat + advanced contact forms",
+      "Google Analytics + Business Profile setup",
+      "Speed optimization (90+ PageSpeed)",
+      "2 rounds of revisions + 1 month free maintenance",
+      "Delivery in 5–7 business days",
     ],
     featured: true,
-    base: [12000, 16000],
+    base: [3999, 3999],
     unit: "once",
   },
   {
-    id: "partner",
-    name: "Partner",
-    price: "let's talk",
-    cadence: "retainer",
-    blurb: "Ongoing design + engineering as an extension of your team.",
+    id: "premium",
+    name: "Premium",
+    price: "6,999",
+    cadence: "one-time",
+    blurb:
+      "For established businesses, e-commerce, and multi-location brands that need a full digital ecosystem.",
     features: [
-      "Everything in Studio",
-      "Monthly iteration cycles",
-      "Roadmap & experiments",
-      "Priority support",
+      "Up to 15 bespoke pages (Figma mockup first)",
+      "Full CMS + e-commerce (up to 50 products)",
+      "Payment gateways (Telr, Stripe, PayTabs)",
+      "Booking system + CRM-ready contact forms",
+      "Advanced SEO + performance (95+ PageSpeed)",
+      "3 rounds of revisions + 3 months free maintenance",
+      "Priority support + video walkthrough & training",
+      "Delivery in 7–12 business days",
     ],
-    base: [3000, 5000],
-    unit: "mo",
+    base: [6999, 6999],
+    unit: "once",
   },
 ];
 
 export const ADDONS: Addon[] = [
   {
-    id: "aeo",
-    label: "AEO — AI answer optimization",
-    blurb: "Structured data + content tuned so AI answer engines cite you.",
-    delta: [2000, 3000],
+    id: "extra-page",
+    label: "Additional page",
+    blurb: "Beyond your tier's included page count — layout, copy, and images.",
+    delta: [299, 299],
     unit: "once",
-    preview: "aeo",
+    preview: "cms",
+  },
+  {
+    id: "ecom",
+    label: "E-commerce upgrade",
+    blurb: "Shopping cart, payment gateway, and product management (up to 50 products).",
+    delta: [2000, 2000],
+    unit: "once",
+    preview: "ecom",
+    includedIn: ["premium"],
+  },
+  {
+    id: "booking",
+    label: "Booking / appointment system",
+    blurb: "Calendar integration with automated reminders (Cal.com / SimplyBook.me).",
+    delta: [1000, 1000],
+    unit: "once",
+    preview: "booking",
+    includedIn: ["premium"],
   },
   {
     id: "multilingual",
-    label: "Multilingual + RTL",
-    blurb: "Arabic-ready right-to-left layouts and translated content.",
-    delta: [2500, 4000],
+    label: "Multi-language support",
+    blurb: "Arabic + English bilingual setup with RTL layout and translation-ready structure.",
+    delta: [1500, 1500],
     unit: "once",
     preview: "multilingual",
   },
   {
     id: "cms",
     label: "CMS / self-editing",
-    blurb: "Edit copy and media yourself, no developer required.",
-    delta: [2000, 3000],
+    blurb: "Edit copy and media yourself — no developer required.",
+    delta: [1500, 1500],
     unit: "once",
     preview: "cms",
-    includedIn: ["studio", "partner"],
+    includedIn: ["business", "premium"],
   },
   {
-    id: "ecom",
-    label: "E-commerce / payments",
-    blurb: "Product catalogue, cart and checkout with secure payments.",
-    delta: [4000, 7000],
+    id: "cms-training",
+    label: "Custom CMS training",
+    blurb: "1-hour video call, written guide, and 30-day email support for your CMS.",
+    delta: [500, 500],
     unit: "once",
-    preview: "ecom",
+    preview: "cms",
   },
   {
-    id: "motion",
-    label: "Advanced motion & scroll",
-    blurb: "Signature scroll choreography and micro-interactions.",
-    delta: [2000, 4000],
-    unit: "once",
-    preview: "motion",
-    includedIn: ["studio", "partner"],
-  },
-  {
-    id: "seo",
-    label: "SEO & analytics package",
-    blurb: "Technical SEO, Core Web Vitals and conversion analytics.",
-    delta: [1000, 2000],
+    id: "logo",
+    label: "Logo design",
+    blurb: "Professional logo — 2 concepts, 2 revisions. Delivered in PNG + SVG.",
+    delta: [500, 500],
     unit: "once",
     preview: "seo",
   },
   {
-    id: "booking",
-    label: "Booking / forms / integrations",
-    blurb: "Scheduling, lead forms and third-party tool wiring.",
-    delta: [1500, 3000],
+    id: "content",
+    label: "Content writing (per page)",
+    blurb: "SEO-optimized copywriting in English or Arabic — up to 500 words per page.",
+    delta: [150, 150],
+    unit: "once",
+    preview: "cms",
+  },
+  {
+    id: "photography",
+    label: "Professional photography",
+    blurb: "On-site shoot — up to 15 edited photos for website use. Dubai only.",
+    delta: [1500, 1500],
+    unit: "once",
+    preview: "ecom",
+  },
+  {
+    id: "seo",
+    label: "SEO monthly retainer",
+    blurb: "Monthly reporting, keyword tracking, backlink analysis, and content suggestions.",
+    delta: [500, 500],
+    unit: "mo",
+    preview: "seo",
+  },
+  {
+    id: "google-ads",
+    label: "Google Ads setup",
+    blurb: "Campaign structure, keyword research, ad copy, and conversion tracking.",
+    delta: [1500, 1500],
+    unit: "once",
+    preview: "seo",
+  },
+  {
+    id: "social-setup",
+    label: "Social media setup (3 platforms)",
+    blurb: "Profile creation and optimization for Instagram, Facebook, and LinkedIn.",
+    delta: [500, 500],
+    unit: "once",
+    preview: "seo",
+  },
+  {
+    id: "integration",
+    label: "Custom integration (per API)",
+    blurb: "Third-party API wiring — CRM, ERP, SMS gateway, payments, and more.",
+    delta: [800, 800],
     unit: "once",
     preview: "booking",
   },
   {
+    id: "speed-audit",
+    label: "Speed optimization audit",
+    blurb: "Full Lighthouse audit, Core Web Vitals fixes, and hosted performance report.",
+    delta: [400, 400],
+    unit: "once",
+    preview: "seo",
+  },
+  {
+    id: "rush",
+    label: "Urgent delivery (rush fee)",
+    blurb: "Halve delivery time, subject to availability.",
+    delta: [500, 500],
+    unit: "once",
+    preview: "motion",
+  },
+  {
     id: "maintenance",
-    label: "Maintenance / retainer",
-    blurb: "Updates, monitoring and priority support, billed monthly.",
-    delta: [800, 1500],
+    label: "Maintenance — Standard",
+    blurb: "Up to 2 small edits/mo, security patches, weekly backups, and 48-hr break/fix SLA.",
+    delta: [300, 300],
     unit: "mo",
     preview: "maintenance",
-    includedIn: ["partner"],
+  },
+  {
+    id: "maintenance-premium",
+    label: "Maintenance — Premium",
+    blurb: "Up to 5 edits/mo, daily offsite backups, monthly SEO reports, and 4-hr emergency response.",
+    delta: [600, 600],
+    unit: "mo",
+    preview: "maintenance",
   },
 ];
 
@@ -213,13 +297,12 @@ export function computeEstimate(tier: PricingTier, selected: string[]): Estimate
 /** ISO currency code for plain-text (non-glyph) contexts like emails. */
 export const CURRENCY_CODE = "AED";
 
-/** Compact money format (symbol-free): 4000 -> "4k", 4500 -> "4.5k", 800 -> "800". */
+/** Compact money format (symbol-free): 1999 -> "1,999", 12000 -> "12k". */
 export function formatMoney(n: number): string {
-  if (n >= 1000) {
-    const k = n / 1000;
-    return `${k % 1 === 0 ? k : k.toFixed(1)}k`;
+  if (n >= 10_000 && n % 1000 === 0) {
+    return `${n / 1000}k`;
   }
-  return `${n}`;
+  return new Intl.NumberFormat("en-AE").format(n);
 }
 
 /** "8k – 13k", collapsing to a single figure when low === high. */
