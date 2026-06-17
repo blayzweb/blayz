@@ -44,7 +44,7 @@ export function Pricing() {
         <h2 className="mb-6 max-w-2xl font-display text-4xl leading-tight font-bold tracking-tight text-blayz-ink sm:text-5xl">
           Woven to fit — pick a tier, then build it your way.
         </h2>
-        <p className="mb-16 max-w-xl font-sans text-blayz-ink/60">
+        <p className="mb-16 max-w-xl font-sans text-base leading-relaxed text-blayz-ink/65 sm:text-lg">
           Start from a tier and configure add-ons like a custom order — watch the
           build and your estimate update in real time.
         </p>
@@ -77,7 +77,7 @@ export function Pricing() {
                   animated
                 />
 
-                <div className="relative flex flex-1 flex-col gap-6 overflow-hidden p-7">
+                <div className="relative flex flex-1 flex-col gap-8 overflow-hidden p-8">
                   {/* large tatreez medallion woven behind the copy */}
                   <div
                     aria-hidden
@@ -97,16 +97,16 @@ export function Pricing() {
 
                   <div className="relative">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-display text-2xl text-[#171313]">
+                      <h3 className="font-display text-2xl font-semibold text-[#171313] sm:text-3xl">
                         {tier.name}
                       </h3>
                       {configured ? (
-                        <span className="rounded-full bg-[#171313] px-2.5 py-1 font-mono text-[10px] tracking-wide text-[#F4EFE7] uppercase">
+                        <span className="rounded-full bg-[#171313] px-3 py-1 font-mono text-xs tracking-wide text-[#F4EFE7] uppercase">
                           configured
                         </span>
                       ) : (
                         tier.featured && (
-                          <span className="rounded-full bg-[#7A1118] px-2.5 py-1 font-mono text-[10px] tracking-wide text-[#F4EFE7] uppercase">
+                          <span className="rounded-full bg-[#7A1118] px-3 py-1 font-mono text-xs tracking-wide text-[#F4EFE7] uppercase">
                             popular
                           </span>
                         )
@@ -115,10 +115,13 @@ export function Pricing() {
 
                     {configured && estimate ? (
                       <>
-                        <p className="mt-3 font-mono text-3xl text-[#7A1118]">
-                          <Money value={headlineFigure(estimate)} />
+                        <p className="mt-4 font-display text-4xl font-semibold tracking-tight text-[#7A1118]">
+                          <Money
+                            value={headlineFigure(estimate)}
+                            weight="semibold"
+                          />
                         </p>
-                        <p className="font-mono text-xs text-[#4A090D]/55">
+                        <p className="mt-1 font-sans text-sm text-[#4A090D]/65">
                           {estimate.once && estimate.monthly ? (
                             <>
                               your build +{" "}
@@ -141,11 +144,11 @@ export function Pricing() {
                       </>
                     ) : (
                       <>
-                        <p className="mt-3 font-mono text-3xl text-[#7A1118]">
-                          <Money value={tier.price} />
+                        <p className="mt-4 font-display text-4xl font-semibold tracking-tight text-[#7A1118]">
+                          <Money value={tier.price} weight="semibold" />
                         </p>
                         {tier.cadence && (
-                          <p className="font-mono text-xs text-[#4A090D]/55">
+                          <p className="mt-1 font-sans text-sm text-[#4A090D]/65">
                             / {tier.cadence}
                           </p>
                         )}
@@ -153,36 +156,54 @@ export function Pricing() {
                     )}
                   </div>
 
-                  <p className="relative font-sans text-sm text-[#171313]/75">
+                  <p className="relative font-sans text-base leading-relaxed text-[#171313]/80">
                     {tier.blurb}
                   </p>
 
-                  <ul className="relative flex flex-col gap-2.5">
+                  <ul className="relative flex flex-col gap-3">
                     {tier.features.map((feat) => (
                       <li
                         key={feat}
-                        className="flex items-start gap-2.5 font-sans text-sm text-[#171313]/85"
+                        className="flex items-start gap-3 font-sans text-base leading-snug text-[#171313]/90"
                       >
                         <span
                           aria-hidden
-                          className="mt-1.5 size-1.5 shrink-0 rotate-45 bg-[#7A1118]"
+                          className="mt-2.5 size-1.5 shrink-0 rounded-full bg-[#7A1118]"
                         />
                         {feat}
                       </li>
                     ))}
                   </ul>
 
-                  <div className="relative mt-auto flex flex-col gap-2">
+                  <div className="relative mt-auto flex flex-col gap-2.5">
                     <button
                       onClick={() => setOpenTier(tier.id)}
                       className={clsx(
-                        "w-full rounded-lg py-3 font-mono text-sm transition-colors",
+                        "w-full rounded-lg py-3.5 font-mono text-base transition-colors",
                         tier.featured && !configured
                           ? "bg-[#7A1118] text-[#F4EFE7] hover:bg-[#4A090D]"
                           : "border border-[#4A090D]/30 text-[#171313] hover:border-[#7A1118] hover:text-[#7A1118]",
                       )}
                     >
-                      {configured ? "< reconfigure />" : "⟶ configure build"}
+                      {configured ? (
+                        <>
+                          <span className="text-[#7A1118]/60">&lt;</span>{" "}
+                          reconfigure{" "}
+                          <span className="text-[#7A1118]/60">/&gt;</span>
+                        </>
+                      ) : tier.featured ? (
+                        <>
+                          <span className="text-[#F4EFE7]/55">&lt;</span>{" "}
+                          configure build{" "}
+                          <span className="text-[#F4EFE7]/55">/&gt;</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-[#7A1118]/60">&lt;</span>{" "}
+                          configure build{" "}
+                          <span className="text-[#7A1118]/60">/&gt;</span>
+                        </>
+                      )}
                     </button>
 
                     {configured && config && (
@@ -193,9 +214,11 @@ export function Pricing() {
                             message: buildSummary(tier, config),
                           })
                         }
-                        className="w-full rounded-lg bg-[#7A1118] py-3 font-mono text-sm text-[#F4EFE7] transition-colors hover:bg-[#4A090D]"
+                        className="w-full rounded-lg bg-[#7A1118] py-3.5 font-mono text-base text-[#F4EFE7] transition-colors hover:bg-[#4A090D]"
                       >
-                        &lt; request this build /&gt;
+                        <span className="text-[#F4EFE7]/55">&lt;</span> request
+                        this build{" "}
+                        <span className="text-[#F4EFE7]/55">/&gt;</span>
                       </button>
                     )}
                   </div>
