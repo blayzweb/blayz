@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { SECTIONS } from "@/lib/sections";
 import { useSite } from "@/components/providers/SiteProvider";
+import { IndexNavItem } from "@/components/nav/IndexNavItem";
 
 /**
  * The Index in its Hero state (PRD §6.4 / §7.1): centered list, larger type.
@@ -16,28 +16,18 @@ export function HeroIndex() {
   return (
     <nav
       aria-label="Sections"
-      className="mx-auto grid w-fit grid-cols-2 gap-x-12 gap-y-3 sm:gap-x-20"
+      className="mx-auto grid w-fit grid-cols-2 gap-x-12 gap-y-4 sm:gap-x-20"
     >
       {SECTIONS.map((s, i) => (
-        <motion.button
+        <IndexNavItem
           key={s.id}
+          section={s}
+          variant="hero"
           layoutId={`idx-${s.id}`}
           onClick={() => scrollTo(s.id)}
-          initial={introDone ? false : { opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            layout: { type: "spring", stiffness: 220, damping: 26 },
-            delay: introDone ? 0 : 0.05 * i,
-          }}
-          className="group flex items-baseline gap-3 text-left"
-        >
-          <span className="font-mono text-sm text-blayz-orange">
-            [ {s.index} ]
-          </span>
-          <span className="font-display text-xl text-blayz-ink transition-colors group-hover:text-blayz-orange sm:text-2xl">
-            {s.label}
-          </span>
-        </motion.button>
+          staggerIndex={i}
+          introDone={introDone}
+        />
       ))}
     </nav>
   );
