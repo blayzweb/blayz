@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local logs and source assets
+chrome.log
+/resources/ASSETS/
+/public/recordings/
+

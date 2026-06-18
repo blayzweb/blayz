@@ -73,7 +73,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     const onScroll = () => {
       ScrollTrigger.update();
 
-      const heroThreshold = window.innerHeight * 0.9;
+      const heroThreshold = window.innerHeight * 2.8;
       setScrolled(window.scrollY > heroThreshold);
 
       // Active section: last section whose top has crossed the viewport midline.
