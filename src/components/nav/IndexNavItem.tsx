@@ -1,10 +1,9 @@
 "use client";
 
-import { motion, type Transition } from "framer-motion";
+import { motion } from "framer-motion";
 import type { SectionMeta } from "@/lib/sections";
 import { clsx } from "@/lib/clsx";
-
-const spring: Transition = { type: "spring", stiffness: 220, damping: 26 };
+import { navDockTransition } from "@/lib/nav-motion";
 
 interface IndexNavItemProps {
   section: SectionMeta;
@@ -12,15 +11,13 @@ interface IndexNavItemProps {
   variant: "hero" | "sidebar";
   layoutId: string;
   onClick: () => void;
-  /** Stagger index for hero entrance only. */
   staggerIndex?: number;
   introDone?: boolean;
 }
 
 /**
- * One Index entry (PRD §6.4). Shared between the centered Hero list and the
- * docked sidebar so bracket notation, typography, and active treatment stay
- * consistent through the Stage B FLIP transition.
+ * One Index entry (PRD §6.4). Shared between Hero and docked sidebar
+ * via layoutId for the Stage B FLIP transition.
  */
 export function IndexNavItem({
   section,
@@ -35,12 +32,15 @@ export function IndexNavItem({
 
   return (
     <motion.button
+      layout
       layoutId={layoutId}
       onClick={onClick}
       initial={isHero && !introDone ? { opacity: 0, y: 12 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{
-        layout: spring,
+        layout: navDockTransition,
+        opacity: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+        y: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
         delay: isHero && !introDone ? 0.05 * staggerIndex : 0,
       }}
       aria-current={active ? "true" : undefined}
@@ -48,39 +48,60 @@ export function IndexNavItem({
         "group text-left",
         isHero
           ? "flex items-baseline gap-3"
-          : "flex w-[4.25rem] flex-col gap-0.5",
+          : "relative flex w-[4.25rem] flex-col gap-0.5",
       )}
     >
-      <span
+      {!isHero && active && (
+        <motion.span
+          layoutId="sidebar-active-marker"
+          className="pointer-events-none absolute -left-4 top-1/2 h-6 w-px -translate-y-1/2 bg-blayz-orange/80"
+          transition={navDockTransition}
+        />
+      )}
+
+      <motion.span
+        layout="position"
         className={clsx(
-          "font-mono tabular-nums transition-colors",
+          "font-mono tabular-nums transition-colors duration-300 ease-out",
           isHero
             ? "text-sm text-blayz-orange"
-            : clsx(
-                "text-[11px] tracking-wide",
-                active
-                  ? "text-blayz-orange"
-                  : "text-blayz-ink/35 group-hover:text-blayz-ink/55",
-              ),
+            : active
+              ? "text-blayz-orange"
+              : "text-blayz-ink/35 group-hover:text-blayz-ink/55",
         )}
       >
         [ {section.index} ]
-      </span>
+      </motion.span>
 
-      <span
-        className={clsx(
-          "transition-colors",
-          isHero
-            ? "font-display text-xl text-blayz-ink group-hover:text-blayz-orange sm:text-2xl"
-            : clsx(
-                "font-mono text-[11px] leading-tight tracking-tight",
-                active
-                  ? "text-blayz-orange"
-                  : "text-blayz-ink/50 group-hover:text-blayz-ink",
-              ),
+      <span className="relative font-mono text-[11px] leading-tight tracking-tight sm:text-inherit">
+        {!isHero && (
+          <>
+            <motion.span
+              className={clsx(
+                "block",
+                !active && "font-mono text-[11px] text-blayz-ink/50 group-hover:text-blayz-ink",
+              )}
+              animate={{ opacity: active ? 0 : 1 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              aria-hidden={active}
+            >
+              {section.label}
+            </motion.span>
+            <motion.span
+              className="absolute inset-0 text-blayz-orange"
+              animate={{ opacity: active ? 1 : 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              aria-hidden={!active}
+            >
+              [ {section.label} ]
+            </motion.span>
+          </>
         )}
-      >
-        {isHero || !active ? section.label : `[ ${section.label} ]`}
+        {isHero && (
+          <span className="font-display text-xl text-blayz-ink transition-colors duration-300 ease-out group-hover:text-blayz-orange sm:text-2xl">
+            {section.label}
+          </span>
+        )}
       </span>
     </motion.button>
   );

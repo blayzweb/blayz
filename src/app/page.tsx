@@ -4,6 +4,8 @@ import { LayoutGroup } from "framer-motion";
 import { SiteProvider, useSite } from "@/components/providers/SiteProvider";
 import { LogoIntro } from "@/components/intro/LogoIntro";
 import { Header } from "@/components/nav/Header";
+import { SidebarIndex } from "@/components/nav/SidebarIndex";
+import { Spine } from "@/components/spine/Spine";
 import { Hero } from "@/components/sections/Hero";
 import { AboutUs } from "@/components/sections/AboutUs";
 import { Services } from "@/components/sections/Services";
@@ -24,6 +26,8 @@ function HomeContent() {
         aria-hidden={!introDone}
       >
         <Header />
+        <SidebarIndex />
+        <Spine />
 
         <main>
           <Hero />

@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useSite } from "@/components/providers/SiteProvider";
+import { navDockTransition } from "@/lib/nav-motion";
 import { Logo } from "@/components/ui/Logo";
 
 /**
@@ -22,7 +23,7 @@ export function Header() {
             onClick={() => scrollTo("hero")}
             className="pointer-events-auto absolute top-2.5 left-5 flex h-12 w-24 items-center justify-center text-blayz-orange sm:left-8"
             aria-label="Blayz — back to top"
-            transition={{ type: "spring", stiffness: 220, damping: 26 }}
+            transition={navDockTransition}
           >
             <Logo fillColor="currentColor" className="w-full h-full" />
           </motion.button>
