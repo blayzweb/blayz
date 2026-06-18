@@ -14,7 +14,7 @@ function pt(cx: number, cy: number, r: number, a: number): [number, number] {
 
 const f = (n: number) => Number(n.toFixed(2));
 
-interface PatternPath {
+export interface PatternPath {
   d: string;
   transform?: string;
   layer?: string;
@@ -184,6 +184,94 @@ function circlePath(cx: number, cy: number, r: number): string {
   )} ${f(r)} 0 1 0 ${f(-r * 2)} 0`;
 }
 
+function smoothPath(points: Array<[number, number]>): string {
+  if (points.length < 2) return "";
+
+  let d = `M ${f(points[0][0])} ${f(points[0][1])}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const previous = points[i - 1] ?? points[i];
+    const current = points[i];
+    const next = points[i + 1];
+    const afterNext = points[i + 2] ?? next;
+
+    const cp1x = current[0] + (next[0] - previous[0]) / 6;
+    const cp1y = current[1] + (next[1] - previous[1]) / 6;
+    const cp2x = next[0] - (afterNext[0] - current[0]) / 6;
+    const cp2y = next[1] - (afterNext[1] - current[1]) / 6;
+
+    d += ` C ${f(cp1x)} ${f(cp1y)} ${f(cp2x)} ${f(cp2y)} ${f(next[0])} ${f(next[1])}`;
+  }
+  return d;
+}
+
+function arabesquePetalPath(
+  cx: number,
+  cy: number,
+  radius: number,
+  angle: number,
+  widthFactor: number,
+): string {
+  const ux = Math.cos(angle);
+  const uy = Math.sin(angle);
+  const nx = -uy;
+  const ny = ux;
+  const baseDistance = radius * 0.08;
+
+  const bx = cx + ux * baseDistance;
+  const by = cy + uy * baseDistance;
+  const tx = cx + ux * radius;
+  const ty = cy + uy * radius;
+  const c1x = cx + ux * radius * 0.2 + nx * radius * widthFactor;
+  const c1y = cy + uy * radius * 0.2 + ny * radius * widthFactor;
+  const c2x =
+    cx + ux * radius * 0.72 + nx * radius * widthFactor * 0.52;
+  const c2y =
+    cy + uy * radius * 0.72 + ny * radius * widthFactor * 0.52;
+  const c3x =
+    cx + ux * radius * 0.72 - nx * radius * widthFactor * 0.52;
+  const c3y =
+    cy + uy * radius * 0.72 - ny * radius * widthFactor * 0.52;
+  const c4x = cx + ux * radius * 0.2 - nx * radius * widthFactor;
+  const c4y = cy + uy * radius * 0.2 - ny * radius * widthFactor;
+
+  return `M ${f(bx)} ${f(by)} C ${f(c1x)} ${f(c1y)} ${f(c2x)} ${f(c2y)} ${f(tx)} ${f(ty)} C ${f(c3x)} ${f(c3y)} ${f(c4x)} ${f(c4y)} ${f(bx)} ${f(by)} Z`;
+}
+
+function floralPetalPath(
+  cx: number,
+  cy: number,
+  radius: number,
+  angle: number,
+): string {
+  const ux = Math.cos(angle);
+  const uy = Math.sin(angle);
+  const nx = -uy;
+  const ny = ux;
+  const point = (along: number, across: number): [number, number] => [
+    cx + ux * radius * along + nx * radius * across,
+    cy + uy * radius * along + ny * radius * across,
+  ];
+
+  const baseLeft = point(0.08, 0.055);
+  const shoulderLeft = point(0.34, 0.36);
+  const tipLeft = point(0.8, 0.12);
+  const tip = point(1.04, 0);
+  const tipRight = point(0.8, -0.12);
+  const shoulderRight = point(0.34, -0.36);
+  const baseRight = point(0.08, -0.055);
+
+  return `M ${f(baseLeft[0])} ${f(baseLeft[1])} C ${f(shoulderLeft[0])} ${f(shoulderLeft[1])} ${f(tipLeft[0])} ${f(tipLeft[1])} ${f(tipLeft[0])} ${f(tipLeft[1])} Q ${f(tip[0])} ${f(tip[1])} ${f(tipRight[0])} ${f(tipRight[1])} C ${f(tipRight[0])} ${f(tipRight[1])} ${f(shoulderRight[0])} ${f(shoulderRight[1])} ${f(baseRight[0])} ${f(baseRight[1])} Q ${f(cx)} ${f(cy)} ${f(baseLeft[0])} ${f(baseLeft[1])} Z`;
+}
+
+function leafPath(
+  cx: number,
+  cy: number,
+  length: number,
+  angle: number,
+): string {
+  return arabesquePetalPath(cx, cy, length, angle, 0.2);
+}
+
 /**
  * Bloom "vine" — a vertical climbing stem with petal clusters, sized to the
  * thin Spine rail (PRD §6.5 Hero/About segment). Drawn bottom-up so it reads
@@ -196,34 +284,81 @@ export function bloomVine(
 ): PatternPath[] {
   const paths: PatternPath[] = [];
   const cx = width / 2;
-  const step = height / nodes;
-  const amp = width * 0.22;
+  const flowerCount = Math.max(3, nodes - 1);
+  const step = height / (flowerCount + 1);
+  const stemPoints: Array<[number, number]> = [];
 
-  // sinuous stem
-  let stem = `M ${f(cx)} ${f(height)} `;
-  for (let i = nodes; i >= 0; i--) {
-    const y = i * step;
-    const x = cx + Math.sin(i * 0.9) * amp;
-    stem += `L ${f(x)} ${f(y)} `;
+  // Build bottom-up so the draw order follows the natural growth direction.
+  for (let i = 0; i <= flowerCount + 1; i++) {
+    const y = height + 12 - i * ((height + 24) / (flowerCount + 1));
+    const x =
+      cx +
+      Math.sin(i * 1.17 + 0.35) * width * 0.095 +
+      Math.cos(i * 0.61) * width * 0.035;
+    stemPoints.push([x, y]);
   }
-  paths.push({ d: stem });
+  paths.push({ d: smoothPath(stemPoints), layer: "stem" });
 
-  // petal clusters at each node (closed teardrop curves matching floral style)
-  for (let i = 1; i < nodes; i++) {
-    const y = i * step;
-    const x = cx + Math.sin(i * 0.9) * amp;
+  for (let i = 1; i <= flowerCount; i++) {
+    const [x, y] = stemPoints[i];
+    const scale = i % 3 === 0 ? 1 : i % 2 === 0 ? 0.86 : 0.94;
+    const radius = Math.min(width * 0.36, step * 0.37) * scale;
+    const rotation = -Math.PI / 2 + i * 0.17;
     const petals = 5;
-    const r = step * 0.42;
-    let d = "";
-    for (let p = 0; p < petals; p++) {
-      const a = (p / petals) * TAU - Math.PI / 2;
-      const [tx, ty] = pt(x, y, r, a);
-      const [mx1, my1] = pt(x, y, r * 0.55, a + 0.35);
-      const [mx2, my2] = pt(x, y, r * 0.55, a - 0.35);
-      d += `M ${f(x)} ${f(y)} Q ${f(mx1)} ${f(my1)} ${f(tx)} ${f(ty)} Q ${f(mx2)} ${f(my2)} ${f(x)} ${f(y)} `;
+
+    // Side leaves keep the vine feeling botanical between the rosettes.
+    const leafSide = i % 2 === 0 ? -1 : 1;
+    paths.push({
+      d: leafPath(
+        x,
+        y + step * 0.24,
+        radius * 0.72,
+        -Math.PI / 2 + leafSide * 1.02,
+      ),
+      layer: "motif",
+    });
+
+    // Broad outer petals remain legible even at the Spine's narrow size.
+    for (let petal = 0; petal < petals; petal++) {
+      paths.push({
+        d: floralPetalPath(
+          x,
+          y,
+          radius,
+          rotation + (petal / petals) * TAU,
+        ),
+        layer: "motif",
+      });
     }
-    paths.push({ d });
+
+    // A small, rotated arabesque corolla supplies cultural detail without
+    // competing with the flower silhouette.
+    for (let petal = 0; petal < petals; petal++) {
+      paths.push({
+        d: arabesquePetalPath(
+          x,
+          y,
+          radius * 0.38,
+          rotation + Math.PI / petals + (petal / petals) * TAU,
+          0.18,
+        ),
+        layer: "accent",
+      });
+    }
+
+    paths.push({
+      d: circlePath(x, y, Math.max(1.25, radius * 0.1)),
+      layer: "accent",
+    });
   }
+
+  // A tapered bud resolves the top of the vine more elegantly than a hard stop.
+  const [topX, topY] = stemPoints[stemPoints.length - 1];
+  paths.push({
+    d: arabesquePetalPath(topX, topY + 5, width * 0.13, -Math.PI / 2, 0.25),
+    layer: "accent",
+  });
+
   return paths;
 }
 
@@ -232,23 +367,27 @@ export function bloomVine(
  * for the closing Contact spine segment (PRD §7.5).
  */
 export function synthesisVine(width = 80, height = 600): PatternPath[] {
-  const out = bloomVine(width, height, 7);
+  const out = bloomVine(width, height, 6);
   const cx = width / 2;
-  const ticks = 18;
+  const ticks = 14;
   const step = height / ticks;
   for (let i = 0; i < ticks; i++) {
     const y = f(i * step + step / 2);
-    if (i % 3 === 0) {
+    if (i % 4 === 0) {
       // sadu diamond
-      const r = step * 0.4;
+      const r = Math.min(width * 0.13, step * 0.32);
       out.push({
         d: `M ${f(cx)} ${f(y - r)} L ${f(cx + r)} ${f(y)} L ${f(cx)} ${f(
           y + r,
         )} L ${f(cx - r)} ${f(y)} Z`,
+        layer: "accent",
       });
-    } else {
+    } else if (i % 2 === 0) {
       // terminal tick
-      out.push({ d: `M ${f(cx + width * 0.18)} ${y} L ${f(width * 0.92)} ${y}` });
+      out.push({
+        d: `M ${f(cx + width * 0.24)} ${y} L ${f(width * (i % 3 === 0 ? 0.88 : 0.72))} ${y}`,
+        layer: "accent",
+      });
     }
   }
   return out;
@@ -264,36 +403,43 @@ export function saduBand(
   rows = 14,
 ): PatternPath[] {
   const paths: PatternPath[] = [];
-  const step = height / rows;
-  const m = width * 0.18;
+  const motifCount = Math.max(5, Math.floor(rows / 2));
+  const step = height / motifCount;
+  const cx = width / 2;
+  const outerRadius = Math.min(width * 0.3, step * 0.34);
+  const innerRadius = outerRadius * 0.48;
 
-  // Zigzag chains.
-  let zig = "";
-  for (let i = 0; i <= rows; i++) {
-    const y = i * step;
-    const x = i % 2 === 0 ? m : width - m;
-    zig += `${i === 0 ? "M" : "L"} ${f(x)} ${f(y)} `;
-  }
-  paths.push({ d: zig });
+  paths.push({
+    d: `M ${f(cx)} ${f(height + 8)} L ${f(cx)} -8`,
+    layer: "stem",
+  });
 
-  let zag = "";
-  for (let i = 0; i <= rows; i++) {
-    const y = i * step;
-    const x = i % 2 === 0 ? width - m : m;
-    zag += `${i === 0 ? "M" : "L"} ${f(x)} ${f(y)} `;
-  }
-  paths.push({ d: zag });
+  for (let i = 0; i < motifCount; i++) {
+    const cy = step * (i + 0.5);
+    const r = outerRadius * (i % 2 === 0 ? 1 : 0.84);
 
-  // Diamonds at every other crossing.
-  for (let i = 1; i < rows; i += 2) {
-    const cy = i * step;
-    const cx = width / 2;
-    const r = step * 0.5;
     paths.push({
       d: `M ${f(cx)} ${f(cy - r)} L ${f(cx + r)} ${f(cy)} L ${f(cx)} ${f(
         cy + r,
       )} L ${f(cx - r)} ${f(cy)} Z`,
+      layer: "motif",
     });
+    paths.push({
+      d: `M ${f(cx)} ${f(cy - innerRadius)} L ${f(cx + innerRadius)} ${f(cy)} L ${f(cx)} ${f(cy + innerRadius)} L ${f(cx - innerRadius)} ${f(cy)} Z`,
+      layer: "accent",
+    });
+    paths.push({
+      d: `M ${f(cx - r * 0.72)} ${f(cy - r * 0.72)} L ${f(cx + r * 0.72)} ${f(cy + r * 0.72)} M ${f(cx + r * 0.72)} ${f(cy - r * 0.72)} L ${f(cx - r * 0.72)} ${f(cy + r * 0.72)}`,
+      layer: "accent",
+    });
+
+    if (i < motifCount - 1) {
+      const connectorY = cy + step / 2;
+      paths.push({
+        d: `M ${f(cx - width * 0.12)} ${f(connectorY)} L ${f(cx)} ${f(connectorY + width * 0.08)} L ${f(cx + width * 0.12)} ${f(connectorY)}`,
+        layer: "accent",
+      });
+    }
   }
   return paths;
 }
@@ -308,18 +454,50 @@ export function terminalLines(
   lines = 26,
 ): PatternPath[] {
   const paths: PatternPath[] = [];
-  const step = height / lines;
+  const clusterCount = Math.max(4, Math.floor(lines / 3));
+  const step = height / clusterCount;
+  const x0 = width * 0.12;
+
+  paths.push({
+    d: `M ${f(x0)} -8 L ${f(x0)} ${f(height + 8)}`,
+    layer: "stem",
+  });
+
   // deterministic pseudo-random lengths
   let seed = 7;
   const rnd = () => {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     return seed / 2147483648;
   };
-  for (let i = 0; i < lines; i++) {
-    const y = f(i * step + step / 2);
-    const len = width * (0.25 + rnd() * 0.7);
-    const x0 = width * 0.1;
-    paths.push({ d: `M ${f(x0)} ${y} L ${f(x0 + len)} ${y}` });
+
+  for (let i = 0; i < clusterCount; i++) {
+    const centerY = step * (i + 0.5);
+    const bracketHeight = Math.min(step * 0.52, 34);
+    const lineGap = bracketHeight / 3;
+
+    paths.push({
+      d: `M ${f(x0 + 5)} ${f(centerY - bracketHeight / 2)} H ${f(x0)} V ${f(centerY + bracketHeight / 2)} H ${f(x0 + 5)}`,
+      layer: "motif",
+    });
+
+    for (let row = 0; row < 3; row++) {
+      const y = centerY - lineGap + row * lineGap;
+      const length = width * (0.28 + rnd() * 0.4);
+      paths.push({
+        d: `M ${f(x0 + 9)} ${f(y)} H ${f(Math.min(width * 0.94, x0 + 9 + length))}`,
+        layer: "motif",
+      });
+    }
+
+    if (i % 2 === 0) {
+      const glyphX = width * 0.84;
+      const glyphY = centerY - bracketHeight * 0.46;
+      const glyphR = width * 0.055;
+      paths.push({
+        d: `M ${f(glyphX)} ${f(glyphY - glyphR)} L ${f(glyphX + glyphR)} ${f(glyphY)} L ${f(glyphX)} ${f(glyphY + glyphR)} L ${f(glyphX - glyphR)} ${f(glyphY)} Z`,
+        layer: "accent",
+      });
+    }
   }
   return paths;
 }

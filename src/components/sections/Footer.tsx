@@ -19,7 +19,7 @@ export function Footer() {
   const [legalOpen, setLegalOpen] = useState<LegalDocumentId | null>(null);
 
   return (
-    <footer className="relative min-h-[16rem] overflow-hidden bg-blayz-ink sm:min-h-[18rem]">
+    <footer id="footer" className="relative min-h-[16rem] overflow-hidden bg-blayz-ink sm:min-h-[18rem]">
       {/* ASCII flame fire effect */}
       <div className="pointer-events-none absolute inset-0">
         <AsciiFlames className="h-full w-full" />

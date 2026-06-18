@@ -70,11 +70,33 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     const lenis = lenisRef.current?.lenis;
     if (!lenis) return;
 
+    ScrollTrigger.scrollerProxy(document.documentElement, {
+      scrollTop(value?: number) {
+        if (value !== undefined) {
+          lenis.scrollTo(value, { immediate: true });
+        }
+        return lenis.scroll;
+      },
+      getBoundingClientRect() {
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
+      },
+    });
+
     const onScroll = () => {
       ScrollTrigger.update();
 
-      const heroThreshold = window.innerHeight * 0.9;
-      setScrolled(window.scrollY > heroThreshold);
+      const heroThreshold = window.innerHeight * 0.88;
+      const hysteresis = 48;
+      setScrolled((prev) => {
+        if (!prev && window.scrollY > heroThreshold) return true;
+        if (prev && window.scrollY < heroThreshold - hysteresis) return false;
+        return prev;
+      });
 
       // Active section: last section whose top has crossed the viewport midline.
       const mid = window.scrollY + window.innerHeight * 0.4;
@@ -88,8 +110,12 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
 
     lenis.on("scroll", onScroll);
     onScroll();
+    const onRefresh = () => lenis.resize();
+    ScrollTrigger.addEventListener("refresh", onRefresh);
     return () => {
       lenis.off("scroll", onScroll);
+      ScrollTrigger.removeEventListener("refresh", onRefresh);
+      ScrollTrigger.scrollerProxy(document.documentElement, {});
     };
   }, [introDone]);
 
@@ -103,7 +129,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     const el = document.getElementById(id);
     if (!el) return;
     if (lenis) {
-      lenis.scrollTo(el, { offset: 0, duration: 1.2 });
+      lenis.scrollTo(el, { offset: 0, duration: 1.35, easing: (t) => 1 - Math.pow(1 - t, 3) });
     } else {
       el.scrollIntoView({ behavior: "smooth" });
     }

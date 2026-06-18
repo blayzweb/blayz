@@ -1,49 +1,51 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SECTIONS } from "@/lib/sections";
 import { useSite } from "@/components/providers/SiteProvider";
 import { IndexNavItem } from "@/components/nav/IndexNavItem";
+import { useFooterClamp } from "@/lib/useFooterClamp";
 
 /**
- * The Index in its scrolled state (PRD §6.4): fixed left, compact vertical
- * list of `[ 01 ]` / `Hero` pairs, active section in orange with bracket
- * markers on the label. Hidden on small screens (PRD §11).
+ * Sidebar Index (PRD §6.4): docked section nav after Stage B.
+ * Bracket labels, active state, Lenis scroll — no decorative patterns here.
  */
 export function SidebarIndex() {
   const { scrolled, introDone, activeSection, scrollTo } = useSite();
   const show = scrolled && introDone;
+  const clamp = useFooterClamp(show);
+
+  if (!show) return null;
 
   return (
-    <AnimatePresence>
-      {show && (
-        <motion.nav
-          aria-label="Sections"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed top-1/2 left-5 z-40 hidden -translate-y-1/2 sm:left-8 md:flex"
-        >
-          {/* left rail — mirrors the Spine rail on the right (PRD §5 layout) */}
-          <div
-            aria-hidden
-            className="mr-3 w-px self-stretch bg-blayz-orange/20"
-          />
+    <motion.nav
+      aria-label="Sections"
+      className="fixed left-5 z-40 hidden flex-col justify-center sm:left-8 md:flex"
+      style={{
+        top: clamp.top,
+        bottom: clamp.bottom,
+        transition: "top 0.45s ease, bottom 0.45s ease",
+      }}
+    >
+      <div className="relative flex flex-col">
+        <div
+          aria-hidden
+          className="absolute top-0 bottom-0 left-0 w-px bg-blayz-orange/20"
+        />
 
-          <div className="flex flex-col gap-4">
-            {SECTIONS.map((s) => (
-              <IndexNavItem
-                key={s.id}
-                section={s}
-                active={activeSection === s.id}
-                variant="sidebar"
-                layoutId={`idx-${s.id}`}
-                onClick={() => scrollTo(s.id)}
-              />
-            ))}
-          </div>
-        </motion.nav>
-      )}
-    </AnimatePresence>
+        <div className="flex flex-col gap-4 pl-4">
+          {SECTIONS.map((s) => (
+            <IndexNavItem
+              key={s.id}
+              section={s}
+              active={activeSection === s.id}
+              variant="sidebar"
+              layoutId={`idx-${s.id}`}
+              onClick={() => scrollTo(s.id)}
+            />
+          ))}
+        </div>
+      </div>
+    </motion.nav>
   );
 }

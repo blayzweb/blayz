@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { HeroIndex } from "@/components/nav/HeroIndex";
 import { useSite } from "@/components/providers/SiteProvider";
+import { navDockTransition } from "@/lib/nav-motion";
 import { Logo } from "@/components/ui/Logo";
 
 /**
@@ -28,7 +29,7 @@ export function Hero() {
             <motion.button
               layoutId="blayz-logo"
               onClick={() => scrollTo("contact")}
-              transition={{ type: "spring", stiffness: 220, damping: 26 }}
+              transition={navDockTransition}
               className="w-[44vw] h-[22vw] sm:w-[32vw] sm:h-[16vw] lg:w-[24rem] lg:h-[12rem] text-blayz-orange flex items-center justify-center"
               aria-label="Blayz"
             >
