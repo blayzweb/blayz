@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useSite } from "@/components/providers/SiteProvider";
+import { ScrollIndicator } from "@/components/sections/ScrollIndicator";
 
 interface HeroCanvasProps {
   children: React.ReactNode;
@@ -213,6 +214,8 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
             <div className="font-mono text-xs mt-2 opacity-60">{loadProgress}%</div>
           </div>
         )}
+
+        <ScrollIndicator ready={imagesLoaded} />
 
         {/* Children content layers on top of canvas */}
         <div className="relative z-10 h-full w-full">

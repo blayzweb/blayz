@@ -21,6 +21,8 @@ export interface QuotePrefill {
 }
 
 interface SiteContextValue {
+  /** True while the viewport is at the top of the hero (scroll cue). */
+  atHeroStart: boolean;
   /** Stage B: true once the user scrolls past the Hero (PRD §6.2). */
   scrolled: boolean;
   /** Section currently in view, drives the Index active state. */
@@ -48,6 +50,7 @@ export function useSite(): SiteContextValue {
 
 export function SiteProvider({ children }: { children: React.ReactNode }) {
   const lenisRef = useRef<LenisRef>(null);
+  const [atHeroStart, setAtHeroStart] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<SectionId>("hero");
   const [introDone, setIntroDone] = useState(false);
@@ -89,6 +92,12 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
 
     const onScroll = () => {
       ScrollTrigger.update();
+
+      setAtHeroStart((prev) => {
+        if (!prev && window.scrollY < 32) return true;
+        if (prev && window.scrollY > 64) return false;
+        return prev;
+      });
 
       const heroThreshold = window.innerHeight * 2.8;
       const hysteresis = 48;
@@ -152,6 +161,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<SiteContextValue>(
     () => ({
+      atHeroStart,
       scrolled,
       activeSection,
       introDone,
@@ -161,7 +171,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
       quote,
       requestQuote,
     }),
-    [scrolled, activeSection, introDone, scrollTo, lockScroll, quote, requestQuote],
+    [atHeroStart, scrolled, activeSection, introDone, scrollTo, lockScroll, quote, requestQuote],
   );
 
   return (
