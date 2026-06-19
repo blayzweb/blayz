@@ -88,7 +88,7 @@ export function AboutUs() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative overflow-hidden bg-blayz-cream px-6 md:px-28 lg:px-36 py-32"
+      className="relative overflow-hidden bg-blayz-cream px-6 md:px-28 lg:px-36 pt-20 pb-28 sm:pt-24 sm:pb-32"
     >
       <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2">
         {/* Medallion centerpiece */}

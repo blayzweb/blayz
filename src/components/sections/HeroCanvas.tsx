@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { HERO_HEIGHT_VH } from "@/lib/hero-scroll";
 import { useSite } from "@/components/providers/SiteProvider";
 import { ScrollIndicator } from "@/components/sections/ScrollIndicator";
 
@@ -142,8 +143,16 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
 
     const obj = { frame: 1 };
     let lastFrame = -1;
+
+    const totalFrames = 300;
+    const scrubDuration = 100;
+    const fadeFrameCount = 10;
+    // Last 10 frames (291–300): fade runs in lockstep with the tail of the scrub.
+    const fadeStart =
+      ((totalFrames - fadeFrameCount) / (totalFrames - 1)) * scrubDuration;
+    const fadeDuration = (fadeFrameCount / (totalFrames - 1)) * scrubDuration;
     
-    // Create ScrollTrigger timeline covering 3 full scrolls (300vh) with easing (scrub: 0.8)
+    // ScrollTrigger timeline — scroll distance set by HERO_HEIGHT_VH.
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: triggerRef.current,
@@ -161,11 +170,11 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
       },
     });
 
-    // Animate frame scrubbing from 1 to 300 (mapped to duration 100)
+    // Scrub frames 1→300 across the scroll.
     tl.to(obj, {
-      frame: 300,
+      frame: totalFrames,
       ease: "none",
-      duration: 100,
+      duration: scrubDuration,
       onUpdate: () => {
         const f = Math.floor(obj.frame);
         if (f !== lastFrame) {
@@ -176,17 +185,22 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
       },
     }, 0);
 
-    // Fade out the canvas container wrapper at the end (85% to 100%) to transition to About section
+    // Fade out over the last 10 frames so About is revealed as the sequence ends.
     tl.to(canvasContainer, {
       opacity: 0,
-      duration: 15,
+      duration: fadeDuration,
       ease: "power1.inOut"
-    }, 85);
+    }, fadeStart);
 
   }, [imagesLoaded, introDone]);
 
   return (
-    <div ref={triggerRef} id="hero" className="relative h-[400vh] w-full">
+    <div
+      ref={triggerRef}
+      id="hero"
+      className="relative w-full"
+      style={{ height: `${HERO_HEIGHT_VH}vh` }}
+    >
       <div ref={pinRef} className="relative h-screen w-full overflow-hidden bg-blayz-cream">
         {/* Canvas background wrapper container */}
         <div

@@ -11,6 +11,7 @@ import {
 } from "react";
 import { ReactLenis, type LenisRef } from "lenis/react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { heroScrollEndPx } from "@/lib/hero-scroll";
 import type { SectionId } from "@/lib/sections";
 import { SECTIONS } from "@/lib/sections";
 
@@ -99,7 +100,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
         return prev;
       });
 
-      const heroThreshold = window.innerHeight * 2.8;
+      const heroThreshold = heroScrollEndPx(window.innerHeight) - window.innerHeight * 0.2;
       const hysteresis = 48;
       setScrolled((prev) => {
         if (!prev && window.scrollY > heroThreshold) return true;
