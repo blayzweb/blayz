@@ -26,7 +26,7 @@ export function Footer() {
       </div>
 
       {/* closing wordmark */}
-      <div className="relative z-10 flex min-h-[16rem] flex-col items-center justify-end px-6 pb-10 text-center sm:min-h-[18rem] sm:pb-12">
+      <div className="relative z-10 flex min-h-[16rem] flex-col items-center justify-end px-6 md:px-28 lg:px-36 pb-10 text-center sm:min-h-[18rem] sm:pb-12">
         <div className="relative flex w-full max-w-2xl flex-col items-center gap-4">
           {/* soft radial scrim wrapped around the brand so it always tracks
               the text and reads cleanly over the flames */}

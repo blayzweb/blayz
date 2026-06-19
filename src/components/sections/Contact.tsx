@@ -135,7 +135,7 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="relative overflow-hidden bg-gradient-to-b from-blayz-cream-deep via-blayz-cream to-blayz-cream px-6 pt-32 pb-28"
+      className="relative overflow-hidden bg-gradient-to-b from-blayz-cream-deep via-blayz-cream to-blayz-cream px-6 md:px-28 lg:px-36 pt-32 pb-28"
     >
       <div className="arabesque-watermark pointer-events-none absolute inset-0 opacity-[0.07]" />
       <div

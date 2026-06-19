@@ -35,7 +35,7 @@ export function Pricing() {
   return (
     <section
       id="pricing"
-      className="relative overflow-hidden bg-blayz-cream-deep px-6 py-32"
+      className="relative overflow-hidden bg-blayz-cream-deep px-6 md:px-28 lg:px-36 py-32"
     >
       <div className="mx-auto max-w-6xl">
         <p className="mb-4 font-mono text-sm text-[#7A1118]">

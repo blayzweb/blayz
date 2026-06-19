@@ -19,7 +19,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(1);
 
-  // Preload all 120 WebP images
+  // Preload all 300 WebP images and decode them off-thread
   useEffect(() => {
     let loadedCount = 0;
     const totalImages = 300;
@@ -31,11 +31,32 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
       img.src = `/assets/hero-sequence/frame_${paddedFrame}.webp`;
 
       const onImageLoad = () => {
-        loadedCount++;
-        setLoadProgress(Math.round((loadedCount / totalImages) * 100));
-        if (loadedCount === totalImages) {
-          imagesRef.current = loadedImages;
-          setImagesLoaded(true);
+        if (typeof img.decode === "function") {
+          img.decode()
+            .then(() => {
+              loadedCount++;
+              setLoadProgress(Math.round((loadedCount / totalImages) * 100));
+              if (loadedCount === totalImages) {
+                imagesRef.current = loadedImages;
+                setImagesLoaded(true);
+              }
+            })
+            .catch(() => {
+              loadedCount++;
+              setLoadProgress(Math.round((loadedCount / totalImages) * 100));
+              if (loadedCount === totalImages) {
+                imagesRef.current = loadedImages;
+                setImagesLoaded(true);
+              }
+            });
+        } else {
+          // Fallback if browser doesn't support HTMLImageElement.decode()
+          loadedCount++;
+          setLoadProgress(Math.round((loadedCount / totalImages) * 100));
+          if (loadedCount === totalImages) {
+            imagesRef.current = loadedImages;
+            setImagesLoaded(true);
+          }
         }
       };
 
@@ -119,14 +140,15 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
     };
 
     const obj = { frame: 1 };
+    let lastFrame = -1;
     
-    // Create ScrollTrigger timeline covering 3 full scrolls (300vh)
+    // Create ScrollTrigger timeline covering 3 full scrolls (300vh) with easing (scrub: 0.8)
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: triggerRef.current,
         start: "top top",
         end: "bottom bottom",
-        scrub: true,
+        scrub: 0.8,
         pin: pinRef.current,
         anticipatePin: 1,
         onRefresh: () => {
@@ -145,36 +167,17 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
       duration: 100,
       onUpdate: () => {
         const f = Math.floor(obj.frame);
-        currentFrameRef.current = f;
-        drawFrame(f);
+        if (f !== lastFrame) {
+          lastFrame = f;
+          currentFrameRef.current = f;
+          drawFrame(f);
+        }
       },
     }, 0);
 
-    // Fade out original hero landing elements (logo, index, tagline) in the first 15% of scroll
-    tl.to(".hero-fade-out", {
-      opacity: 0,
-      pointerEvents: "none",
-      duration: 15,
-      ease: "power1.out"
-    }, 0);
-
-    // Fade in new cultural/digital copywriting on the right between 45% and 75% scroll
-    tl.fromTo(".hero-copy-overlay", 
-      { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 25, ease: "power2.out" },
-      45
-    );
-
-    // Fade out the canvas container wrapper and the copy overlay at the end (85% to 100%) to transition to About section
+    // Fade out the canvas container wrapper at the end (85% to 100%) to transition to About section
     tl.to(canvasContainer, {
       opacity: 0,
-      duration: 15,
-      ease: "power1.inOut"
-    }, 85);
-
-    tl.to(".hero-copy-overlay", {
-      opacity: 0,
-      y: -30,
       duration: 15,
       ease: "power1.inOut"
     }, 85);
@@ -193,6 +196,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
           <canvas
             ref={canvasRef}
             className="h-full w-full pointer-events-none"
+            style={{ willChange: "transform" }}
           />
         </div>
 
@@ -213,16 +217,6 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
         {/* Children content layers on top of canvas */}
         <div className="relative z-10 h-full w-full">
           {children}
-          
-          {/* New copy overlay that appears during scroll pan */}
-          <div className="hero-copy-overlay absolute right-[10%] top-[45%] -translate-y-1/2 max-w-md pointer-events-none opacity-0 select-none">
-            <h2 className="font-sans text-3xl font-light text-blayz-ink leading-snug">
-              A studio where ornament meets the command line.
-            </h2>
-            <p className="mt-4 font-mono text-sm text-blayz-orange">
-              [ 01 / CRAFT &amp; CODE ]
-            </p>
-          </div>
         </div>
       </div>
     </div>
