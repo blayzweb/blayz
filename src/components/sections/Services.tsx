@@ -66,10 +66,10 @@ export function Services() {
   return (
     <section
       id="services"
-      className="relative bg-blayz-ink px-6 md:px-28 lg:px-36 py-32 text-blayz-cream"
+      className="relative bg-blayz-ink px-6 md:px-28 lg:px-36 pt-16 pb-16 text-blayz-cream"
     >
       <div ref={root} className="mx-auto max-w-5xl">
-        <p className="mb-8 font-mono text-sm text-blayz-orange">
+        <p className="mb-8 font-sans text-sm text-blayz-orange">
           [ 03 ] Services
         </p>
 

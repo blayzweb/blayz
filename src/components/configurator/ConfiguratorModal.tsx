@@ -54,11 +54,20 @@ export function ConfiguratorModal({
 
   function toggle(addon: Addon) {
     if (isIncluded(addon, tier.id)) return; // bundled — not removable
-    setSelected((prev) =>
-      prev.includes(addon.id)
-        ? prev.filter((id) => id !== addon.id)
-        : [...prev, addon.id],
-    );
+    setSelected((prev) => {
+      const isAlreadySelected = prev.includes(addon.id);
+      if (isAlreadySelected) {
+        return prev.filter((id) => id !== addon.id);
+      } else {
+        let filtered = prev;
+        if (addon.id === "maintenance") {
+          filtered = prev.filter((id) => id !== "maintenance-premium");
+        } else if (addon.id === "maintenance-premium") {
+          filtered = prev.filter((id) => id !== "maintenance");
+        }
+        return [...filtered, addon.id];
+      }
+    });
   }
 
   function confirm() {
@@ -116,13 +125,13 @@ export function ConfiguratorModal({
       <div className="relative z-10 mx-auto flex h-full w-full max-w-6xl flex-col">
         {/* top bar */}
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-8">
-          <p className="font-mono text-xs text-white/50">
+          <p className="font-sans text-xs text-white/50">
             <span className="text-blayz-orange">configure</span> / {tier.name.toLowerCase()}
           </p>
           <button
             onClick={onClose}
             aria-label="Close configurator"
-            className="grid size-8 place-items-center rounded-md font-mono text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+            className="grid size-8 place-items-center rounded-md font-sans text-white/60 transition-colors hover:bg-white/10 hover:text-white"
           >
             ✕
           </button>
@@ -149,7 +158,7 @@ export function ConfiguratorModal({
               </p>
 
               {/* base features */}
-              <p className="mt-7 font-mono text-xs text-blayz-ink/40">
+              <p className="mt-7 font-sans font-bold text-xs text-blayz-ink/40">
                 ┌ included in {tier.name.toLowerCase()}
               </p>
               <ul className="mt-3 flex flex-col gap-2">
@@ -158,15 +167,15 @@ export function ConfiguratorModal({
                     key={feat}
                     className="flex items-start gap-2 font-sans text-sm text-blayz-ink/80"
                   >
-                    <span className="mt-0.5 font-mono text-blayz-orange">◆</span>
+                    <span className="mt-0.5 font-sans text-blayz-orange">◆</span>
                     {feat}
                   </li>
                 ))}
               </ul>
 
               {/* add-ons */}
-              <p className="mt-8 font-mono text-xs text-blayz-ink/40">
-                ┌ customize — add-ons
+              <p className="mt-8 font-sans font-bold text-xs text-blayz-ink/40">
+                ┌ customize: add-ons
               </p>
               <div className="mt-3 flex flex-col gap-2.5">
                 {ADDONS.map((addon) => {
@@ -189,7 +198,7 @@ export function ConfiguratorModal({
                     >
                       <span
                         className={clsx(
-                          "mt-0.5 grid size-5 shrink-0 place-items-center rounded border font-mono text-xs transition-colors",
+                          "mt-0.5 grid size-5 shrink-0 place-items-center rounded border font-sans font-bold text-xs transition-colors",
                           active
                             ? "border-blayz-orange bg-blayz-orange text-blayz-cream"
                             : "border-blayz-ink/25 text-transparent",
@@ -202,7 +211,7 @@ export function ConfiguratorModal({
                           <span className="font-sans text-sm font-medium text-blayz-ink">
                             {addon.label}
                           </span>
-                          <span className="shrink-0 font-mono text-xs text-blayz-orange">
+                          <span className="shrink-0 font-sans text-xs text-blayz-orange">
                             {included ? (
                               "included"
                             ) : (
@@ -232,16 +241,16 @@ export function ConfiguratorModal({
             <div className="border-t border-blayz-ink/10 bg-blayz-cream-deep px-5 py-4 sm:px-8">
               <div className="flex items-end justify-between gap-4">
                 <div>
-                  <p className="font-mono text-[10px] tracking-wide text-blayz-ink/40 uppercase">
+                  <p className="font-sans font-bold text-[10px] tracking-wide text-blayz-ink/40 uppercase">
                     estimated
                   </p>
                   {estimate.once && (
-                    <p className="font-mono text-2xl leading-tight text-blayz-orange">
+                    <p className="font-sans font-bold text-2xl leading-tight text-blayz-orange">
                       <Money value={formatRange(estimate.once)} />
                     </p>
                   )}
                   {estimate.monthly && (
-                    <p className="font-mono text-sm text-blayz-ink/60">
+                    <p className="font-sans text-sm text-blayz-ink/60">
                       {estimate.once && "+ "}
                       <Money
                         value={formatRange(estimate.monthly)}
@@ -254,13 +263,13 @@ export function ConfiguratorModal({
                 </div>
                 <button
                   onClick={confirm}
-                  className="rounded-lg bg-blayz-orange px-5 py-3 font-mono text-sm text-blayz-cream transition-colors hover:bg-blayz-ink"
+                  className="rounded-lg bg-blayz-orange px-5 py-3 font-sans font-bold text-sm text-blayz-cream transition-colors hover:bg-blayz-ink"
                 >
                   &lt; request this build /&gt;
                 </button>
               </div>
-              <p className="mt-2 font-mono text-[10px] text-blayz-ink/35">
-                rough estimate — final scope confirmed together.
+              <p className="mt-2 font-sans text-[10px] text-blayz-ink/35">
+                rough estimate; final scope confirmed together.
               </p>
             </div>
           </div>

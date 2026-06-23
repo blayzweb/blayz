@@ -13,7 +13,7 @@ export const licenceSections: LegalSection[] = [
     index: "01",
     title: "Introduction",
     paragraphs: [
-      "This Licence sets out how you may use blayz.studio and the content published on it. It does not replace a signed contract for client projects — bespoke work is always governed by its own agreement.",
+      "This Licence sets out how you may use blayz.studio and the content published on it. It does not replace a signed contract for client projects, as bespoke work is always governed by its own agreement.",
     ],
   },
   {
@@ -21,7 +21,7 @@ export const licenceSections: LegalSection[] = [
     index: "02",
     title: "Site content",
     paragraphs: [
-      "Unless stated otherwise, all content on this site — including text, visuals, code samples, ornament, and the Blayz brand — is owned by Blayz or used with permission.",
+      "Unless stated otherwise, all content on this site, including text, visuals, code samples, patterns, and the Blayz brand, is owned by Blayz or used with permission.",
     ],
     bullets: [
       "You may view and share links to our pages for personal or non-commercial reference.",
@@ -34,7 +34,7 @@ export const licenceSections: LegalSection[] = [
     index: "03",
     title: "Client work",
     paragraphs: [
-      "Deliverables created for clients — websites, brand systems, code, and design files — are licensed under the terms of each project contract. Ownership and usage rights are defined there, not on this page.",
+      "Deliverables created for clients, including websites, brand systems, code, and design files, are licensed under the terms of each project contract. Ownership and usage rights are defined there, not on this page.",
       "Portfolio case studies and previews may show client work with permission. Those assets remain subject to their respective licences.",
     ],
   },
@@ -61,7 +61,7 @@ export const licenceSections: LegalSection[] = [
     title: "Liability",
     paragraphs: [
       "To the fullest extent permitted by law, Blayz is not liable for any loss or damage arising from your use of this site or reliance on its content.",
-      "Some jurisdictions do not allow certain limitations — in those cases, our liability is limited to the maximum extent allowed.",
+      "Some jurisdictions do not allow certain limitations. In those cases, our liability is limited to the maximum extent allowed.",
     ],
   },
   {

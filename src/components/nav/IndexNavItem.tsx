@@ -62,7 +62,7 @@ export function IndexNavItem({
       <motion.span
         layout="position"
         className={clsx(
-          "font-mono tabular-nums transition-colors duration-300 ease-out",
+          "font-sans font-bold tabular-nums transition-colors duration-300 ease-out",
           isHero
             ? "text-sm text-blayz-orange"
             : active
@@ -73,13 +73,13 @@ export function IndexNavItem({
         [ {section.index} ]
       </motion.span>
 
-      <span className="relative font-mono text-[11px] leading-tight tracking-tight sm:text-inherit">
+      <span className="relative font-sans text-[11px] leading-tight tracking-tight sm:text-inherit">
         {!isHero && (
           <>
             <motion.span
               className={clsx(
                 "block",
-                !active && "font-mono text-[11px] text-blayz-ink/50 group-hover:text-blayz-ink",
+                !active && "font-sans text-[11px] text-blayz-ink/50 group-hover:text-blayz-ink",
               )}
               animate={{ opacity: active ? 0 : 1 }}
               transition={{ duration: 0.25, ease: "easeOut" }}

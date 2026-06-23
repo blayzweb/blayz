@@ -13,7 +13,7 @@ export function LegalSectionBlock({
         isLast ? "" : "border-b border-blayz-peach/35 lg:border-b-0"
       }`}
     >
-      <p className="font-mono text-xs text-blayz-orange">[ {section.index} ]</p>
+      <p className="font-sans font-bold text-xs text-blayz-orange">[ {section.index} ]</p>
       <h3 className="mt-1 font-display text-lg font-bold text-blayz-ink">
         {section.title}
       </h3>

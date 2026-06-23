@@ -2,7 +2,7 @@ import type { LegalSection } from "@/content/legal-types";
 
 export const cookiesMeta = {
   title: "Cookie Policy",
-  subtitle: "What cookies we use and why — in plain language.",
+  subtitle: "What cookies we use and why, explained in plain language.",
   accent: "your choice matters",
   lastUpdated: "18 June 2026",
 } as const;
@@ -13,7 +13,7 @@ export const cookiesSections: LegalSection[] = [
     index: "01",
     title: "Introduction",
     paragraphs: [
-      "This site uses cookies — small text files stored on your device — to keep things working and, with your consent, to understand how visitors use the studio site.",
+      "This site uses cookies, which are small text files stored on your device, to keep things working and, with your consent, to understand how visitors use our studio site.",
       "This policy explains what we set, what they do, and how you can control them.",
     ],
   },
@@ -34,7 +34,7 @@ export const cookiesSections: LegalSection[] = [
     index: "03",
     title: "Analytics cookies",
     paragraphs: [
-      "If you accept optional cookies, we may use privacy-friendly analytics to see aggregate traffic — which pages are visited, how long people stay, and where errors occur.",
+      "If you accept optional cookies, we may use privacy-friendly analytics to see aggregate traffic. This helps us see which pages are visited, how long people stay, and where errors occur.",
       "We do not use analytics cookies to build advertising profiles or track you across other websites.",
     ],
   },

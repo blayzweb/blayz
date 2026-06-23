@@ -28,10 +28,10 @@
   --color-blayz-ink: var(--blayz-ink);
   --color-blayz-ink-soft: var(--blayz-ink-soft);
 
-  --font-display: var(--font-display);
+  --font-display: var(--font-satoshi);
   --font-sans: var(--font-satoshi);
   --font-mono: var(--font-mono-code);
-  --font-kufi: var(--font-kufi);
+  --font-kufi: var(--font-satoshi);
 }
 
 * {
@@ -71,18 +71,15 @@ html.lenis body {
    Utility primitives
    ============================================================ */
 .font-display {
-  font-family: var(--font-display), system-ui, sans-serif;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
 }
-/* Reem Kufi ships only Medium/Bold (per the type system); pin the default
-   accent weight to Medium so `font-kufi` text always has a loaded face. */
 .font-kufi {
-  font-family: var(--font-kufi), serif;
-  font-weight: 500;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
 }
 
-/* The wordmark — lowercase, tight, geometric (placeholder for custom blayz font) */
+/* The wordmark: lowercase, tight, geometric */
 .wordmark {
-  font-family: var(--font-display), system-ui, sans-serif;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: -0.04em;
   text-transform: lowercase;

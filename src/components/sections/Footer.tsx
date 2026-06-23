@@ -41,10 +41,10 @@ export function Footer() {
           </span>
           <FooterSocialLinks />
           <p
-            className="font-mono text-xs text-blayz-cream/55"
+            className="font-sans text-xs text-blayz-cream/55"
             style={{ textShadow: "0 1px 12px rgba(26,26,26,0.95)" }}
           >
-            © {new Date().getFullYear()}{" "}Blayz — crafted with code &amp; culture
+            © {new Date().getFullYear()}{" "}Blayz. Crafted with code &amp; culture.
           </p>
           <FooterLegalLinks onLegalOpen={setLegalOpen} />
         </div>

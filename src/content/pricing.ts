@@ -49,14 +49,11 @@ export const PRICING_TIERS: PricingTier[] = [
     price: "1,999",
     cadence: "one-time",
     blurb:
-      "For micro-businesses, freelancers, and side hustles that need a credible online presence — fast.",
+      "A credible online presence for freelancers and side projects.",
     features: [
-      "5 pages (Home, About, Services, Contact + 1)",
-      "Mobile-responsive, customized template",
-      "Contact form + social links + Google Maps",
-      "Basic on-page SEO + free SSL",
-      "1 round of revisions",
-      "Delivery in 3–5 business days",
+      "Up to 5 responsive pages",
+      "Contact form, SEO & SSL",
+      "1 revision round",
     ],
     base: [1999, 1999],
     unit: "once",
@@ -67,16 +64,11 @@ export const PRICING_TIERS: PricingTier[] = [
     price: "3,999",
     cadence: "one-time",
     blurb:
-      "For SMEs, clinics, gyms, and growing brands that need a professional presence with room to grow.",
+      "Professional presence for SMEs and growing brands.",
     features: [
-      "8 pages (Home, About, Services, Gallery, Blog, Contact + 2)",
-      "Custom design — no templates",
-      "CMS integration (client-editable)",
-      "WhatsApp chat + advanced contact forms",
-      "Google Analytics + Business Profile setup",
-      "Speed optimization (90+ PageSpeed)",
-      "2 rounds of revisions + 1 month free maintenance",
-      "Delivery in 5–7 business days",
+      "Up to 8 custom-designed pages",
+      "CMS, WhatsApp & analytics",
+      "2 revision rounds",
     ],
     featured: true,
     base: [3999, 3999],
@@ -88,16 +80,11 @@ export const PRICING_TIERS: PricingTier[] = [
     price: "6,999",
     cadence: "one-time",
     blurb:
-      "For established businesses, e-commerce, and multi-location brands that need a full digital ecosystem.",
+      "Full digital ecosystem for e-commerce and established brands.",
     features: [
-      "Up to 15 bespoke pages (Figma mockup first)",
-      "Full CMS + e-commerce (up to 50 products)",
-      "Payment gateways (Telr, Stripe, PayTabs)",
-      "Booking system + CRM-ready contact forms",
-      "Advanced SEO + performance (95+ PageSpeed)",
-      "3 rounds of revisions + 3 months free maintenance",
-      "Priority support + video walkthrough & training",
-      "Delivery in 7–12 business days",
+      "Up to 15 pages & Figma mockup",
+      "E-commerce, payments & booking",
+      "3 revision rounds",
     ],
     base: [6999, 6999],
     unit: "once",
@@ -108,7 +95,7 @@ export const ADDONS: Addon[] = [
   {
     id: "extra-page",
     label: "Additional page",
-    blurb: "Beyond your tier's included page count — layout, copy, and images.",
+    blurb: "Beyond your tier's included page count: covers layout, copy, and images.",
     delta: [299, 299],
     unit: "once",
     preview: "cms",
@@ -125,7 +112,7 @@ export const ADDONS: Addon[] = [
   {
     id: "booking",
     label: "Booking / appointment system",
-    blurb: "Calendar integration with automated reminders (Cal.com / SimplyBook.me).",
+    blurb: "Calendar integration with automated reminders.",
     delta: [1000, 1000],
     unit: "once",
     preview: "booking",
@@ -142,7 +129,7 @@ export const ADDONS: Addon[] = [
   {
     id: "cms",
     label: "CMS / self-editing",
-    blurb: "Edit copy and media yourself — no developer required.",
+    blurb: "Edit copy and media yourself without needing a developer.",
     delta: [1500, 1500],
     unit: "once",
     preview: "cms",
@@ -152,22 +139,22 @@ export const ADDONS: Addon[] = [
     id: "cms-training",
     label: "Custom CMS training",
     blurb: "1-hour video call, written guide, and 30-day email support for your CMS.",
-    delta: [500, 500],
+    delta: [150, 150],
     unit: "once",
     preview: "cms",
   },
   {
-    id: "logo",
-    label: "Logo design",
-    blurb: "Professional logo — 2 concepts, 2 revisions. Delivered in PNG + SVG.",
-    delta: [500, 500],
+    id: "three-d",
+    label: "3D elements",
+    blurb: "Interactive 3D graphics, models, or immersive components. Starting at 1,000 AED.",
+    delta: [1000, 1000],
     unit: "once",
-    preview: "seo",
+    preview: "motion",
   },
   {
     id: "content",
     label: "Content writing (per page)",
-    blurb: "SEO-optimized copywriting in English or Arabic — up to 500 words per page.",
+    blurb: "SEO-optimized copywriting in English or Arabic, up to 500 words per page.",
     delta: [150, 150],
     unit: "once",
     preview: "cms",
@@ -175,7 +162,7 @@ export const ADDONS: Addon[] = [
   {
     id: "photography",
     label: "Professional photography",
-    blurb: "On-site shoot — up to 15 edited photos for website use. Dubai only.",
+    blurb: "On-site shoot with up to 15 edited photos for website use. Currently limited to Dubai and Sharjah.",
     delta: [1500, 1500],
     unit: "once",
     preview: "ecom",
@@ -189,38 +176,6 @@ export const ADDONS: Addon[] = [
     preview: "seo",
   },
   {
-    id: "google-ads",
-    label: "Google Ads setup",
-    blurb: "Campaign structure, keyword research, ad copy, and conversion tracking.",
-    delta: [1500, 1500],
-    unit: "once",
-    preview: "seo",
-  },
-  {
-    id: "social-setup",
-    label: "Social media setup (3 platforms)",
-    blurb: "Profile creation and optimization for Instagram, Facebook, and LinkedIn.",
-    delta: [500, 500],
-    unit: "once",
-    preview: "seo",
-  },
-  {
-    id: "integration",
-    label: "Custom integration (per API)",
-    blurb: "Third-party API wiring — CRM, ERP, SMS gateway, payments, and more.",
-    delta: [800, 800],
-    unit: "once",
-    preview: "booking",
-  },
-  {
-    id: "speed-audit",
-    label: "Speed optimization audit",
-    blurb: "Full Lighthouse audit, Core Web Vitals fixes, and hosted performance report.",
-    delta: [400, 400],
-    unit: "once",
-    preview: "seo",
-  },
-  {
     id: "rush",
     label: "Urgent delivery (rush fee)",
     blurb: "Halve delivery time, subject to availability.",
@@ -230,7 +185,7 @@ export const ADDONS: Addon[] = [
   },
   {
     id: "maintenance",
-    label: "Maintenance — Standard",
+    label: "Maintenance (Standard)",
     blurb: "Up to 2 small edits/mo, security patches, weekly backups, and 48-hr break/fix SLA.",
     delta: [300, 300],
     unit: "mo",
@@ -238,7 +193,7 @@ export const ADDONS: Addon[] = [
   },
   {
     id: "maintenance-premium",
-    label: "Maintenance — Premium",
+    label: "Maintenance (Premium)",
     blurb: "Up to 5 edits/mo, daily offsite backups, monthly SEO reports, and 4-hr emergency response.",
     delta: [600, 600],
     unit: "mo",
@@ -260,7 +215,13 @@ export function isIncluded(addon: Addon, tierId: TierId): boolean {
 
 /** Add-on ids that ship bundled with a tier — the configurator's default selection. */
 export function defaultSelection(tierId: TierId): string[] {
-  return ADDONS.filter((a) => isIncluded(a, tierId)).map((a) => a.id);
+  const defaults = ADDONS.filter((a) => isIncluded(a, tierId)).map((a) => a.id);
+  if (tierId === "starter") {
+    defaults.push("maintenance");
+  } else {
+    defaults.push("maintenance-premium");
+  }
+  return defaults;
 }
 
 /** Build a {once, monthly} estimate from a tier and the set of selected add-on ids. */
@@ -324,7 +285,7 @@ export function buildSummary(tier: PricingTier, selected: string[]): string {
   const estimate = computeEstimate(tier, selected);
   const chosen = ADDONS.filter((a) => selected.includes(a.id));
 
-  const lines: string[] = [`Build configuration — ${tier.name} tier`, ""];
+  const lines: string[] = [`Build configuration: ${tier.name} tier`, ""];
 
   if (chosen.length) {
     lines.push("Add-ons:");
@@ -343,7 +304,7 @@ export function buildSummary(tier: PricingTier, selected: string[]): string {
       `Estimated monthly: ${CURRENCY_CODE} ${formatRange(estimate.monthly)}/mo`,
     );
   lines.push("");
-  lines.push("(Generated from the Blayz configurator — rough estimate.)");
+  lines.push("(Generated from the Blayz configurator, as a rough estimate.)");
 
   return lines.join("\n");
 }

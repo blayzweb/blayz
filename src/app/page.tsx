@@ -8,7 +8,9 @@ import { SidebarIndex } from "@/components/nav/SidebarIndex";
 import { Spine } from "@/components/spine/Spine";
 import { Hero } from "@/components/sections/Hero";
 import { AboutUs } from "@/components/sections/AboutUs";
+import { AboutToServicesTransition } from "@/components/ui/AboutToServicesTransition";
 import { Services } from "@/components/sections/Services";
+import { ServicesToPricingTransition } from "@/components/ui/ServicesToPricingTransition";
 import { Pricing } from "@/components/sections/Pricing";
 import { Contact } from "@/components/sections/Contact";
 import { Footer } from "@/components/sections/Footer";
@@ -32,7 +34,9 @@ function HomeContent() {
         <main>
           <Hero />
           <AboutUs />
+          <AboutToServicesTransition />
           <Services />
+          <ServicesToPricingTransition />
           <Pricing />
           <Contact />
           <Footer />

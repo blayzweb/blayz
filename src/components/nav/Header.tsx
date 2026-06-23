@@ -34,7 +34,7 @@ export function Header() {
             className={`pointer-events-auto absolute top-2.5 left-5 flex h-12 w-24 items-center justify-center transition-colors duration-500 sm:left-8 ${
               scrolled ? "text-blayz-orange" : "text-white"
             }`}
-            aria-label="Blayz — back to top"
+            aria-label="Blayz: back to top"
           >
             <Logo fillColor="currentColor" className="w-full h-full" />
           </motion.button>

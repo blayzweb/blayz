@@ -15,7 +15,7 @@ export const SERVICES: ServiceEntry[] = [
     tag: "[ design ]",
     title: "Design",
     description:
-      "Identity, interface and art direction built on a real visual system — type, grid, motion and ornament that hold together.",
+      "Identity, interface, and art direction built on a real visual system of typography, grids, and motion that hold together.",
   },
   {
     tag: "< build />",
@@ -27,13 +27,13 @@ export const SERVICES: ServiceEntry[] = [
     tag: "{ rebrand }",
     title: "Rebrand",
     description:
-      "Evolve an existing brand without losing its equity — refresh the system, sharpen the story, modernise every touchpoint.",
+      "Evolve an existing brand without losing its identity. We help you refresh the system, sharpen your story, and modernise every touchpoint.",
   },
   {
     tag: "// optimize",
     title: "Optimize",
     description:
-      "Performance, SEO and conversion passes. We measure, then make the numbers move — Core Web Vitals included.",
+      "Performance, SEO, and conversion optimizations. We measure first, then improve the numbers, including your Core Web Vitals.",
   },
   {
     tag: "< launch />",
@@ -45,7 +45,7 @@ export const SERVICES: ServiceEntry[] = [
     tag: "/* iterate */",
     title: "Iterate",
     description:
-      "Ongoing partnership — experiments, content and feature work that compound long after the first release.",
+      "An ongoing partnership for experiments, content, and feature work that compounds long after the first release.",
   },
 ];
 

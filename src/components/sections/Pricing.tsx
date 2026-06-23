@@ -6,6 +6,7 @@ import {
   PRICING_TIERS,
   buildSummary,
   computeEstimate,
+  defaultSelection,
   headlineFigure,
   type TierId,
 } from "@/content/pricing";
@@ -35,27 +36,25 @@ export function Pricing() {
   return (
     <section
       id="pricing"
-      className="relative overflow-hidden bg-blayz-cream-deep px-6 md:px-28 lg:px-36 py-32"
+      className="relative overflow-hidden bg-blayz-cream-deep px-6 md:px-28 lg:px-36 pt-14 pb-14"
     >
       <div className="mx-auto max-w-6xl">
-        <p className="mb-4 font-mono text-sm text-[#7A1118]">
+        <p className="mb-4 font-sans text-sm text-[#7A1118]">
           [ 04 ] Pricing
         </p>
-        <h2 className="mb-6 max-w-2xl font-display text-4xl leading-tight font-bold tracking-tight text-blayz-ink sm:text-5xl">
-          Woven to fit — pick a tier, then build it your way.
+        <h2 className="mb-4 max-w-2xl font-display text-3xl leading-tight font-bold tracking-tight text-blayz-ink sm:text-4xl">
+          Woven to fit. Pick a tier, then build it your way.
         </h2>
-        <p className="mb-16 max-w-xl font-sans text-base leading-relaxed text-blayz-ink/65 sm:text-lg">
-          Fixed AED pricing built for UAE SMEs — start from a tier, add what you
+        <p className="mb-10 max-w-xl font-sans text-sm leading-relaxed text-blayz-ink/65 sm:text-base">
+          Fixed AED pricing built for UAE SMEs: start from a tier, add what you
           need, and watch your estimate update in real time.
         </p>
 
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3">
           {PRICING_TIERS.map((tier, i) => {
-            const config = configs[tier.id];
-            const configured = config !== undefined;
-            const estimate = configured
-              ? computeEstimate(tier, config)
-              : null;
+            const config = configs[tier.id] ?? defaultSelection(tier.id);
+            const configured = configs[tier.id] !== undefined;
+            const estimate = computeEstimate(tier, config);
 
             return (
               <motion.div
@@ -73,11 +72,11 @@ export function Pricing() {
               >
                 <TatreezBorder
                   variant={tier.featured ? "floral" : "diamonds"}
-                  height={24}
+                  height={20}
                   animated
                 />
 
-                <div className="relative flex flex-1 flex-col gap-8 overflow-hidden p-8">
+                <div className="relative flex flex-1 flex-col gap-5 overflow-hidden px-6 py-5">
                   {/* large tatreez medallion woven behind the copy */}
                   <div
                     aria-hidden
@@ -97,78 +96,63 @@ export function Pricing() {
 
                   <div className="relative">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-display text-2xl font-semibold text-[#171313] sm:text-3xl">
+                      <h3 className="font-display text-xl font-semibold text-[#171313] sm:text-2xl">
                         {tier.name}
                       </h3>
                       {configured ? (
-                        <span className="rounded-full bg-[#171313] px-3 py-1 font-mono text-xs tracking-wide text-[#F4EFE7] uppercase">
+                        <span className="rounded-full bg-[#171313] px-3 py-1 font-sans text-xs font-bold tracking-wide text-[#F4EFE7] uppercase">
                           configured
                         </span>
                       ) : (
                         tier.featured && (
-                          <span className="rounded-full bg-[#7A1118] px-3 py-1 font-mono text-xs tracking-wide text-[#F4EFE7] uppercase">
+                          <span className="rounded-full bg-[#7A1118] px-3 py-1 font-sans text-xs font-bold tracking-wide text-[#F4EFE7] uppercase">
                             best value
                           </span>
                         )
                       )}
                     </div>
 
-                    {configured && estimate ? (
-                      <>
-                        <p className="mt-4 font-display text-4xl font-semibold tracking-tight text-[#7A1118]">
-                          <Money
-                            value={headlineFigure(estimate)}
-                            weight="semibold"
-                          />
-                        </p>
-                        <p className="mt-1 font-sans text-sm text-[#4A090D]/65">
-                          {estimate.once && estimate.monthly ? (
-                            <>
-                              your build +{" "}
-                              <Money
-                                value={headlineFigure({
-                                  once: null,
-                                  monthly: estimate.monthly,
-                                })}
-                                weight="regular"
-                                symbolSize="0.9em"
-                              />
-                              /mo
-                            </>
-                          ) : estimate.monthly ? (
-                            "/ month"
-                          ) : (
-                            "your build"
-                          )}
-                        </p>
-                      </>
+                    <p className="mt-3 font-display text-3xl font-semibold tracking-tight text-[#7A1118]">
+                      <Money
+                        value={headlineFigure(estimate)}
+                        weight="semibold"
+                      />
+                    </p>
+                    {estimate.monthly ? (
+                      <p className="mt-1 font-sans text-sm text-[#4A090D]/65">
+                        +{" "}
+                        <Money
+                          value={headlineFigure({
+                            once: null,
+                            monthly: estimate.monthly,
+                          })}
+                          weight="regular"
+                          symbolSize="0.9em"
+                        />
+                        /mo maintenance
+                      </p>
                     ) : (
-                      <>
-                        <p className="mt-4 font-display text-4xl font-semibold tracking-tight text-[#7A1118]">
-                          <Money value={tier.price} weight="semibold" />
+                      tier.cadence && (
+                        <p className="mt-1 font-sans text-sm text-[#4A090D]/65">
+                          / {tier.cadence}
                         </p>
-                        {tier.cadence && (
-                          <p className="mt-1 font-sans text-sm text-[#4A090D]/65">
-                            / {tier.cadence}
-                          </p>
-                        )}
-                      </>
+                      )
                     )}
                   </div>
 
-                  <p className="relative font-sans text-base leading-relaxed text-[#171313]/80">
+                  <p className="relative font-sans text-sm leading-relaxed text-[#171313]/70">
                     {tier.blurb}
                   </p>
 
-                  <ul className="relative flex flex-col gap-3">
+                  <ul className="relative flex flex-col gap-1.5">
                     {tier.features.map((feat) => (
                       <li
                         key={feat}
-                        className="flex items-start gap-3 font-sans text-base leading-snug text-[#171313]/90"
+                        className="flex items-start gap-2 font-sans text-sm leading-snug text-[#171313]/85"
                       >
                         <span
                           aria-hidden
-                          className="mt-2.5 size-1.5 shrink-0 rounded-full bg-[#7A1118]"
+                          className="mt-2 size-1 shrink-0 rounded-full bg-[#7A1118]"
                         />
                         {feat}
                       </li>
@@ -179,7 +163,7 @@ export function Pricing() {
                     <button
                       onClick={() => setOpenTier(tier.id)}
                       className={clsx(
-                        "w-full rounded-lg py-3.5 font-mono text-base transition-colors",
+                        "w-full rounded-lg py-2.5 font-sans font-bold text-sm transition-colors",
                         tier.featured && !configured
                           ? "bg-[#7A1118] text-[#F4EFE7] hover:bg-[#4A090D]"
                           : "border border-[#4A090D]/30 text-[#171313] hover:border-[#7A1118] hover:text-[#7A1118]",
@@ -214,7 +198,7 @@ export function Pricing() {
                             message: buildSummary(tier, config),
                           })
                         }
-                        className="w-full rounded-lg bg-[#7A1118] py-3.5 font-mono text-base text-[#F4EFE7] transition-colors hover:bg-[#4A090D]"
+                        className="w-full rounded-lg bg-[#7A1118] py-2.5 font-sans font-bold text-sm text-[#F4EFE7] transition-colors hover:bg-[#4A090D]"
                       >
                         <span className="text-[#F4EFE7]/55">&lt;</span> request
                         this build{" "}
@@ -226,7 +210,7 @@ export function Pricing() {
 
                 <TatreezBorder
                   variant={tier.featured ? "floral" : "diamonds"}
-                  height={24}
+                  height={20}
                   animated
                   flip
                 />

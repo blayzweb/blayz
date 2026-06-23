@@ -88,7 +88,7 @@ export function AboutUs() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative overflow-hidden bg-blayz-cream px-6 md:px-28 lg:px-36 pt-20 pb-28 sm:pt-24 sm:pb-32"
+      className="relative overflow-hidden bg-blayz-cream px-6 md:px-28 lg:px-36 pt-20 pb-12 sm:pt-24 sm:pb-16"
     >
       <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2">
         {/* Medallion centerpiece */}
@@ -138,55 +138,20 @@ export function AboutUs() {
 
         {/* Copy */}
         <div className="flex flex-col gap-8">
-          <p className="font-mono text-sm text-blayz-orange">[ 02 ] About</p>
+          <p className="font-sans text-sm text-blayz-orange">[ 02 ] About</p>
           <h2 className="font-display text-4xl leading-tight font-bold tracking-tight text-blayz-ink sm:text-5xl">
-            A studio where ornament
+            We build websites
             <br />
-            meets the command line.
+            that build brands.
           </h2>
           <p className="max-w-prose font-sans text-lg text-blayz-ink/70">
-            Blayz is a design-and-build studio fusing Arabic geometric
-            tradition — arabesque, Sadu, Tatreez — with the rigour of modern
-            web engineering. Every project is{" "}
-            <span className="font-kufi text-blayz-orange">
-              crafted with code &amp; culture
-            </span>
-            : systems that are beautiful, fast, and unmistakably yours.
+            Blayz is a web development studio focused on giving local businesses a
+            better platform to match their identity, or a thoughtful refresh to their
+            existing one. We believe in your brand&rsquo;s story, and we&rsquo;re
+            here to help you take that further.
           </p>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            {FOUNDERS.map((person) => (
-              <div
-                key={person.name}
-                className="rounded-lg border border-blayz-ink/10 bg-white/40 p-5"
-              >
-                <p className="font-mono text-xs text-blayz-ink/40">
-                  ┌ {person.role}
-                </p>
-                <p className="mt-2 font-display text-xl text-blayz-ink">
-                  {person.name}
-                </p>
-                <p className="mt-1 font-sans text-sm text-blayz-ink/60">
-                  {person.bio}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>
   );
 }
-
-const FOUNDERS = [
-  {
-    name: "Anas",
-    role: "design + direction",
-    bio: "Leads the visual system — type, ornament, and the brand story.",
-  },
-  {
-    name: "The studio",
-    role: "code + craft",
-    bio: "Engineers the experience end to end, from pixels to deploys.",
-  },
-];

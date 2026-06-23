@@ -42,10 +42,10 @@ export async function POST(req: Request) {
   const to = process.env.CONTACT_TO_EMAIL;
   const from = process.env.CONTACT_FROM_EMAIL ?? "Blayz <onboarding@resend.dev>";
 
-  // Not configured yet — log and succeed so the UI works during development.
+  // Not configured yet: log and succeed so the UI works during development.
   if (!apiKey || !to) {
     console.warn(
-      "[contact] RESEND_API_KEY / CONTACT_TO_EMAIL not set — skipping send.",
+      "[contact] RESEND_API_KEY / CONTACT_TO_EMAIL not set: skipping email delivery.",
       { name, email, projectType },
     );
     return NextResponse.json({ ok: true, delivered: false });
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       from,
       to,
       replyTo: email,
-      subject: `New project enquiry — ${name} (${projectType})`,
+      subject: `New project enquiry: ${name} (${projectType})`,
       text: [
         `Name: ${name}`,
         `Email: ${email}`,

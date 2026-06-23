@@ -81,7 +81,7 @@ export function LegalDocumentModal({
               </div>
               <p className="max-w-xl text-sm leading-relaxed text-blayz-ink/70 sm:pb-0.5 sm:text-base">
                 {legal.subtitle}{" "}
-                <span className="font-kufi text-blayz-orange">{legal.accent}</span>
+                <span className="font-sans font-bold text-blayz-orange">{legal.accent}</span>
               </p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-2">
@@ -93,7 +93,7 @@ export function LegalDocumentModal({
               >
                 Close
               </button>
-              <p className="font-mono text-xs text-blayz-orange/70">
+              <p className="font-sans text-xs text-blayz-orange/70">
                 last updated · {legal.lastUpdated}
               </p>
             </div>

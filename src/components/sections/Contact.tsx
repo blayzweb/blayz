@@ -135,7 +135,7 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="relative overflow-hidden bg-gradient-to-b from-blayz-cream-deep via-blayz-cream to-blayz-cream px-6 md:px-28 lg:px-36 pt-32 pb-28"
+      className="relative overflow-hidden bg-gradient-to-b from-blayz-cream-deep via-blayz-cream to-blayz-cream px-6 md:px-28 lg:px-36 pt-32 pb-28 sm:pb-36"
     >
       <div className="arabesque-watermark pointer-events-none absolute inset-0 opacity-[0.07]" />
       <div
@@ -144,13 +144,13 @@ export function Contact() {
       />
 
       <div className="relative mx-auto max-w-6xl">
-        <p className="mb-4 font-mono text-sm text-blayz-orange">[ 05 ] Contact</p>
+        <p className="mb-4 font-sans text-sm text-blayz-orange">[ 05 ] Contact</p>
         <h2 className="max-w-2xl font-display text-4xl leading-tight font-bold tracking-tight text-blayz-ink sm:text-5xl">
           Let&rsquo;s build something{" "}
           <span className="text-blayz-orange">crafted</span>.
         </h2>
         <p className="mt-6 mb-14 max-w-xl font-sans text-base leading-relaxed text-blayz-ink/65 sm:text-lg">
-          Share a brief, a half-formed idea, or a full configurator build — we
+          Share a brief, a half-formed idea, or a full configurator build. We
           read every message and reply with something useful, not a template.
         </p>
 
@@ -171,18 +171,18 @@ export function Contact() {
               <div className="p-7 sm:p-9">
                 {status === "success" ? (
                   <div className="flex min-h-72 flex-col items-center justify-center gap-4 text-center">
-                    <span className="grid size-12 place-items-center rounded-full bg-blayz-orange/10 font-mono text-blayz-orange">
+                    <span className="grid size-12 place-items-center rounded-full bg-blayz-orange/10 font-sans text-blayz-orange">
                       ✓
                     </span>
-                    <p className="font-mono text-sm text-blayz-orange">
+                    <p className="font-sans text-sm text-blayz-orange">
                       message sent
                     </p>
                     <p className="max-w-sm font-display text-2xl leading-snug text-blayz-ink sm:text-3xl">
-                      Thanks — we&rsquo;ll be in touch shortly.
+                      Thanks, we&rsquo;ll be in touch shortly.
                     </p>
                     <button
                       onClick={() => setStatus("idle")}
-                      className="mt-2 font-mono text-sm text-blayz-ink/60 transition-colors hover:text-blayz-orange"
+                      className="mt-2 font-sans font-bold text-sm text-blayz-ink/60 transition-colors hover:text-blayz-orange"
                     >
                       <span className="text-blayz-orange/70">&lt;</span> send
                       another <span className="text-blayz-orange/70">/&gt;</span>
@@ -237,14 +237,14 @@ export function Contact() {
                         required
                         rows={message ? 8 : 5}
                         className={`${inputCls} resize-none`}
-                        placeholder="Tell us about your project — goals, timeline, references…"
+                        placeholder="Tell us about your project, including goals, timeline, and references…"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                       />
                     </Field>
 
                     {status === "error" && (
-                      <p className="font-mono text-sm text-blayz-orange">
+                      <p className="font-sans font-semibold text-sm text-blayz-orange">
                         ! {error}
                       </p>
                     )}
@@ -252,7 +252,7 @@ export function Contact() {
                     <button
                       type="submit"
                       disabled={status === "submitting"}
-                      className="mt-1 rounded-lg bg-blayz-orange py-3.5 font-mono text-base text-blayz-cream transition-colors hover:bg-blayz-ink disabled:opacity-60"
+                      className="mt-1 rounded-lg bg-blayz-orange py-3.5 font-sans font-bold text-base text-blayz-cream transition-colors hover:bg-blayz-ink disabled:opacity-60"
                     >
                       {status === "submitting" ? (
                         "sending…"
@@ -291,7 +291,7 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-2">
-      <span className="font-mono text-xs text-blayz-ink/50">
+      <span className="font-sans font-semibold text-xs text-blayz-ink/50">
         {label}
         {required && <span className="text-blayz-orange"> *</span>}
       </span>
@@ -335,7 +335,7 @@ function ContactAside({
             hello@blayz.studio
           </a>
           <p className="mt-2 max-w-xs font-sans text-sm leading-relaxed text-blayz-ink/55">
-            Or use the form — configs from the pricing builder paste straight
+            Or use the form; configs from the pricing builder paste straight
             in.
           </p>
         </ThreadBlock>
@@ -345,7 +345,7 @@ function ContactAside({
             {NEXT_STEPS.map((item) => (
               <li key={item.step}>
                 <p className="font-display text-base leading-snug text-blayz-ink sm:text-lg">
-                  <span className="mr-2 font-mono text-sm text-blayz-orange">
+                  <span className="mr-2 font-sans font-bold text-sm text-blayz-orange">
                     {item.step}
                   </span>
                   {item.title}
@@ -361,7 +361,7 @@ function ContactAside({
         <ThreadBlock label="elsewhere">
           <nav
             aria-label="Social links"
-            className="mt-3 flex flex-wrap items-center gap-x-1 gap-y-2 font-mono text-sm"
+            className="mt-3 flex flex-wrap items-center gap-x-1 gap-y-2 font-sans text-sm font-bold"
           >
             {SOCIAL_LINKS.map((link, i) => (
               <span key={link.label} className="inline-flex items-center">
@@ -382,6 +382,15 @@ function ContactAside({
               </span>
             ))}
           </nav>
+
+          <p className="mt-5 font-sans text-xs leading-relaxed text-blayz-ink/45">
+            based in{" "}
+            <span className="text-blayz-ink/70">Dubai, UAE</span>
+            <span aria-hidden className="mx-2 text-blayz-ink/20">
+              ·
+            </span>
+            worldwide
+          </p>
         </ThreadBlock>
       </div>
 
@@ -400,7 +409,7 @@ function ThreadBlock({
   return (
     <div className="relative pl-9">
       <ThreadNode />
-      <p className="font-mono text-xs tracking-wide text-blayz-orange/75 uppercase">
+      <p className="font-sans font-bold text-xs tracking-wide text-blayz-orange/75 uppercase">
         {label}
       </p>
       {children}

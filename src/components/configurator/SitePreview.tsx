@@ -44,7 +44,7 @@ export function SitePreview({
             <span className="size-2.5 rounded-full bg-blayz-gold" />
             <span className="size-2.5 rounded-full bg-blayz-sage" />
           </span>
-          <span className="ml-1 flex flex-1 items-center gap-2 truncate rounded-md bg-blayz-cream px-2.5 py-1 font-mono text-[10px] text-blayz-ink/50">
+          <span className="ml-1 flex flex-1 items-center gap-2 truncate rounded-md bg-blayz-cream px-2.5 py-1 font-sans font-medium text-[10px] text-blayz-ink/50">
             {has("maintenance") && (
               <span className="size-1.5 shrink-0 rounded-full bg-blayz-sage" />
             )}
@@ -55,7 +55,7 @@ export function SitePreview({
             <motion.span
               initial={reduced ? false : { scale: 0 }}
               animate={{ scale: 1 }}
-              className="rounded bg-blayz-sage/40 px-1.5 py-0.5 font-mono text-[9px] text-blayz-ink/70"
+              className="rounded bg-blayz-sage/40 px-1.5 py-0.5 font-sans font-bold text-[9px] text-blayz-ink/70"
             >
               100
             </motion.span>
@@ -82,7 +82,7 @@ export function SitePreview({
                     initial={reduced ? false : { opacity: 0, scale: 0.6 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.6 }}
-                    className="rounded border border-blayz-ink/15 px-1 font-kufi text-[10px] text-blayz-ink/70"
+                    className="rounded border border-blayz-ink/15 px-1 font-sans text-[10px] text-blayz-ink/70"
                   >
                     ع / EN
                   </motion.span>
@@ -143,7 +143,7 @@ export function SitePreview({
                   initial={reduced ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="font-kufi text-sm text-blayz-ink/70"
+                  className="font-sans text-sm text-blayz-ink/70"
                 >
                   علامة تجارية لا تُنسى
                 </motion.p>
@@ -163,7 +163,7 @@ export function SitePreview({
                 {...block}
                 className="rounded-lg border border-blayz-orange/30 bg-blayz-orange/5 p-2.5"
               >
-                <p className="mb-1 font-mono text-[9px] text-blayz-orange">
+                <p className="mb-1 font-sans font-bold text-[9px] text-blayz-orange">
                   ✦ AI answer
                 </p>
                 <div className="h-1.5 w-full rounded bg-blayz-ink/15" />
@@ -230,7 +230,7 @@ export function SitePreview({
                   initial={reduced ? false : { opacity: 0, scale: 0.6 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.6 }}
-                  className="rounded bg-blayz-sky/60 px-1.5 py-0.5 font-mono text-[9px] text-blayz-ink/70"
+                  className="rounded bg-blayz-sky/60 px-1.5 py-0.5 font-sans font-bold text-[9px] text-blayz-ink/70"
                 >
                   ✎ editable
                 </motion.span>
@@ -241,7 +241,7 @@ export function SitePreview({
                   initial={reduced ? false : { opacity: 0, scale: 0.6 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.6 }}
-                  className="rounded bg-blayz-sage/40 px-1.5 py-0.5 font-mono text-[9px] text-blayz-ink/70"
+                  className="rounded bg-blayz-sage/40 px-1.5 py-0.5 font-sans font-bold text-[9px] text-blayz-ink/70"
                 >
                   ◈ 99.9%
                 </motion.span>
@@ -250,9 +250,9 @@ export function SitePreview({
           </motion.div>
         </motion.div>
       </motion.div>
-
-      <p className="mt-3 text-center font-mono text-[10px] text-white/40">
-        live preview — {tier.name.toLowerCase()} build
+ 
+      <p className="mt-3 text-center font-sans text-[10px] text-white/40">
+        live preview: {tier.name.toLowerCase()} build
       </p>
     </div>
   );
