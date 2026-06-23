@@ -11,7 +11,7 @@ interface HeroCanvasProps {
 }
 
 export function HeroCanvas({ children }: HeroCanvasProps) {
-  const { introDone } = useSite();
+  const { introDone, setHeroLoaded } = useSite();
   const triggerRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -41,6 +41,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
               if (loadedCount === totalImages) {
                 imagesRef.current = loadedImages;
                 setImagesLoaded(true);
+                setHeroLoaded(true);
               }
             })
             .catch(() => {
@@ -49,6 +50,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
               if (loadedCount === totalImages) {
                 imagesRef.current = loadedImages;
                 setImagesLoaded(true);
+                setHeroLoaded(true);
               }
             });
         } else {
@@ -58,6 +60,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
           if (loadedCount === totalImages) {
             imagesRef.current = loadedImages;
             setImagesLoaded(true);
+            setHeroLoaded(true);
           }
         }
       };
@@ -66,7 +69,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
       img.onerror = onImageLoad; // Fallback to avoid blocking on load error
       loadedImages[i] = img;
     }
-  }, []);
+  }, [setHeroLoaded]);
 
   // Handle Resize and Drawing
   useEffect(() => {

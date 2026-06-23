@@ -5,22 +5,27 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { useSite } from "@/components/providers/SiteProvider";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { INTRO_FAILSAFE_MS, lockPageScroll } from "./introUtils";
-import { IntroBackdrop, IntroStage } from "./IntroStage";
+import { LOGO_PATH } from "./logoPath";
 
 /**
  * Stage A intro (PRD §6.1).
- * Unified, lightweight zoom-reveal animation using GSAP.
- * Zooms into the white blayz logo on a black background, fading to transparent
- * to reveal the Hero section underneath.
+ * Custom B&W Zoom-reveal transition:
+ * - A white logo is centered on a black background.
+ * - Gentle breathing pulse while loading the 3D assets.
+ * - When loaded, zooms through a mask cutout in the black background.
+ * - The white logo fades to transparent, revealing the 3D scene inside the letters.
+ * - The cutout expands to infinity to reveal the whole scene.
  */
 export function LogoIntro() {
-  const { setIntroDone, lockScroll } = useSite();
+  const { setIntroDone, lockScroll, heroLoaded } = useSite();
   const reduced = useReducedMotion();
   const [dismissed, setDismissed] = useState(false);
 
   const root = useRef<HTMLDivElement>(null);
-  const backdrop = useRef<HTMLDivElement>(null);
-  const stage = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<SVGRectElement>(null);
+  const maskLogoRef = useRef<SVGGElement>(null);
+  const whiteLogoRef = useRef<SVGGElement>(null);
+  const pulseTweenRef = useRef<gsap.core.Tween | null>(null);
 
   const finish = useCallback(() => {
     setIntroDone(true);
@@ -30,7 +35,26 @@ export function LogoIntro() {
   useGSAP(
     () => {
       if (dismissed) return;
-      if (!root.current || !stage.current || !backdrop.current) return;
+
+      if (!heroLoaded) {
+        // While loading, play a gentle pulsing animation to show activity
+        if (whiteLogoRef.current) {
+          pulseTweenRef.current = gsap.to(whiteLogoRef.current, {
+            scale: 1.03,
+            duration: 1.2,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            transformOrigin: "center center",
+          });
+        }
+        return;
+      }
+
+      // If we reach here, hero has loaded. Kill the pulse tween.
+      pulseTweenRef.current?.kill();
+
+      if (!root.current || !maskLogoRef.current || !whiteLogoRef.current || !backdropRef.current) return;
 
       let finished = false;
       const complete = () => {
@@ -54,25 +78,29 @@ export function LogoIntro() {
       const tl = gsap.timeline({ paused: true });
 
       if (reduced) {
-        // Just fade out logo and background in case of reduced motion setting
-        tl.to(stage.current, { opacity: 0, duration: 0.6 }, 0.2)
-          .to(backdrop.current, { opacity: 0, duration: 0.6 }, 0.2);
+        // Fallback: fade out white logo and backdrop in case of reduced motion setting
+        tl.to(whiteLogoRef.current, { opacity: 0, duration: 0.6 }, 0.2)
+          .to(backdropRef.current, { opacity: 0, duration: 0.6 }, 0.2);
       } else {
-        // Center-zoom the white logo, then fade out the black background
-        gsap.set(stage.current, { scale: 1, opacity: 1, transformOrigin: "center center" });
-        gsap.set(backdrop.current, { opacity: 1 });
+        // Reset/align elements
+        gsap.set([whiteLogoRef.current, maskLogoRef.current], {
+          scale: 1,
+          transformOrigin: "center center",
+        });
+        gsap.set(whiteLogoRef.current, { opacity: 1 });
+        gsap.set(backdropRef.current, { opacity: 1 });
 
-        tl.to(stage.current, {
-          scale: 45,
-          opacity: 0,
-          duration: 1.6,
+        // Zoom through the logo cutout, and fade out the top white overlay
+        tl.to([whiteLogoRef.current, maskLogoRef.current], {
+          scale: 65,
+          duration: 2.2,
           ease: "power2.inOut",
-        }, 0.5)
-        .to(backdrop.current, {
+        }, 0)
+        .to(whiteLogoRef.current, {
           opacity: 0,
-          duration: 1.2,
-          ease: "power2.inOut",
-        }, 0.8);
+          duration: 1.1,
+          ease: "power1.inOut",
+        }, 0.2);
       }
 
       tl.eventCallback("onComplete", () => {
@@ -80,19 +108,20 @@ export function LogoIntro() {
         complete();
       });
 
-      // Start playing
+      // Play
       tl.play(0);
 
       return () => {
         window.clearTimeout(failsafe);
         tl.kill();
+        pulseTweenRef.current?.kill();
         if (!finished) {
           lockScroll(false);
           lockPageScroll(false);
         }
       };
     },
-    { scope: root, dependencies: [reduced, dismissed], revertOnUpdate: false },
+    { scope: root, dependencies: [heroLoaded, reduced, dismissed], revertOnUpdate: false },
   );
 
   if (dismissed) return null;
@@ -100,12 +129,43 @@ export function LogoIntro() {
   return (
     <div
       ref={root}
-      className="fixed inset-0 z-[100] flex touch-none items-center justify-center select-none overflow-hidden"
+      className="fixed inset-0 z-[100] flex touch-none items-center justify-center select-none overflow-hidden bg-transparent"
       role="status"
       aria-label="Loading Blayz"
     >
-      <IntroBackdrop backdropRef={backdrop} />
-      <IntroStage stageRef={stage} />
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 1448 724"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <defs>
+          <mask id="logo-mask">
+            {/* Opaque white background rect: keeps the black rect visible */}
+            <rect x="-5000" y="-5000" width="11448" height="10724" fill="white" />
+            {/* Black logo cutout group: cuts a transparent hole in the mask */}
+            <g ref={maskLogoRef}>
+              <path d={LOGO_PATH} fill="black" />
+            </g>
+          </mask>
+        </defs>
+
+        {/* Black screen rectangle with the mask applied */}
+        <rect
+          ref={backdropRef}
+          x="-5000"
+          y="-5000"
+          width="11448"
+          height="10724"
+          fill="black"
+          mask="url(#logo-mask)"
+        />
+
+        {/* Solid white logo group on top of the cutout hole */}
+        <g ref={whiteLogoRef}>
+          <path d={LOGO_PATH} fill="white" />
+        </g>
+      </svg>
     </div>
   );
 }
