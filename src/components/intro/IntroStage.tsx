@@ -1,15 +1,7 @@
 import type { RefObject } from "react";
-import { INTRO_FRAMES } from "./frames";
-import {
-  INTRO_CLIP_ID,
-  INTRO_FOREIGN_H,
-  INTRO_FOREIGN_W,
-  frameFillStyle,
-  INK,
-} from "./introUtils";
-import { LOGO_PATH } from "./logoPath";
+import { Logo } from "@/components/ui/Logo";
 
-/** Single SVG stage — desktop animates with GSAP, mobile with timed opacity attrs. */
+/** Simple starting SVG stage - a white blayz logo centered */
 export function IntroStage({
   stageRef,
 }: {
@@ -18,43 +10,9 @@ export function IntroStage({
   return (
     <div
       ref={stageRef}
-      className="relative aspect-[2/1] w-[min(88vw,20rem)] md:w-[min(32vw,24rem)]"
+      className="relative w-[44vw] h-[22vw] sm:w-[32vw] sm:h-[16vw] lg:w-[24rem] lg:h-[12rem] text-white flex items-center justify-center overflow-visible"
     >
-      <svg
-        viewBox={`0 0 ${INTRO_FOREIGN_W} ${INTRO_FOREIGN_H}`}
-        width="100%"
-        height="100%"
-        className="block h-full w-full overflow-visible"
-        aria-hidden
-      >
-        <defs>
-          <clipPath id={INTRO_CLIP_ID} clipPathUnits="userSpaceOnUse">
-            <path d={LOGO_PATH} />
-          </clipPath>
-        </defs>
-        {INTRO_FRAMES.map((frame, index) => (
-          <g
-            key={frame.id}
-            data-frame
-            clipPath={`url(#${INTRO_CLIP_ID})`}
-            opacity={index === 0 ? 1 : 0}
-          >
-            <foreignObject
-              x="0"
-              y="0"
-              width={INTRO_FOREIGN_W}
-              height={INTRO_FOREIGN_H}
-            >
-              <div
-                {...({
-                  xmlns: "http://www.w3.org/1999/xhtml",
-                } as Record<string, string>)}
-                style={frameFillStyle(frame, "foreign")}
-              />
-            </foreignObject>
-          </g>
-        ))}
-      </svg>
+      <Logo fillColor="currentColor" className="w-full h-full" />
     </div>
   );
 }
@@ -67,8 +25,7 @@ export function IntroBackdrop({
   return (
     <div
       ref={backdropRef}
-      className="absolute inset-0"
-      style={{ backgroundColor: INK }}
+      className="absolute inset-0 bg-black"
     />
   );
 }

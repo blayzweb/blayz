@@ -1,61 +1,36 @@
 "use client";
 
-import { useCallback, useRef, useState, useLayoutEffect } from "react";
+import { useCallback, useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { useSite } from "@/components/providers/SiteProvider";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { INTRO_FAILSAFE_MS, lockPageScroll, whenIntroReady } from "./introUtils";
-import { buildFullTimeline, buildReducedTimeline } from "./introTimeline";
+import { INTRO_FAILSAFE_MS, lockPageScroll } from "./introUtils";
 import { IntroBackdrop, IntroStage } from "./IntroStage";
-import { useMobileIntroSequence } from "./useMobileIntroSequence";
-
-function prefersMobileIntro() {
-  return window.matchMedia(
-    "(max-width: 767px), (hover: none) and (pointer: coarse)",
-  ).matches;
-}
 
 /**
  * Stage A intro (PRD §6.1).
- * Mobile: timer-driven SVG frame steps (no GSAP — iOS never completes those tweens).
- * Desktop: GSAP timeline with scale + crossfade.
+ * Unified, lightweight zoom-reveal animation using GSAP.
+ * Zooms into the white blayz logo on a black background, fading to transparent
+ * to reveal the Hero section underneath.
  */
 export function LogoIntro() {
   const { setIntroDone, lockScroll } = useSite();
   const reduced = useReducedMotion();
   const [dismissed, setDismissed] = useState(false);
-  const [mobile, setMobile] = useState<boolean | null>(null);
 
   const root = useRef<HTMLDivElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    setMobile(prefersMobileIntro());
-  }, []);
 
   const finish = useCallback(() => {
     setIntroDone(true);
     setDismissed(true);
   }, [setIntroDone]);
 
-  useMobileIntroSequence({
-    enabled: mobile === true && !dismissed,
-    reduced,
-    rootRef: root,
-    backdropRef: backdrop,
-    stageRef: stage,
-    lockScroll,
-    onFinish: finish,
-  });
-
   useGSAP(
     () => {
-      if (mobile !== false || dismissed) return;
-      if (!root.current || !stage.current) return;
-
-      const layers = stage.current.querySelectorAll("[data-frame]");
-      if (!layers.length) return;
+      if (dismissed) return;
+      if (!root.current || !stage.current || !backdrop.current) return;
 
       let finished = false;
       const complete = () => {
@@ -76,30 +51,39 @@ export function LogoIntro() {
 
       const failsafe = window.setTimeout(complete, INTRO_FAILSAFE_MS);
 
-      const tl = reduced
-        ? buildReducedTimeline({
-            layers,
-            root: root.current,
-            backdrop: backdrop.current,
-          })
-        : buildFullTimeline({
-            layers,
-            root: root.current,
-            backdrop: backdrop.current,
-            wrap: stage.current,
-            mobile: false,
-          });
+      const tl = gsap.timeline({ paused: true });
 
-      tl.pause();
+      if (reduced) {
+        // Just fade out logo and background in case of reduced motion setting
+        tl.to(stage.current, { opacity: 0, duration: 0.6 }, 0.2)
+          .to(backdrop.current, { opacity: 0, duration: 0.6 }, 0.2);
+      } else {
+        // Center-zoom the white logo, then fade out the black background
+        gsap.set(stage.current, { scale: 1, opacity: 1, transformOrigin: "center center" });
+        gsap.set(backdrop.current, { opacity: 1 });
+
+        tl.to(stage.current, {
+          scale: 45,
+          opacity: 0,
+          duration: 1.6,
+          ease: "power2.inOut",
+        }, 0.5)
+        .to(backdrop.current, {
+          opacity: 0,
+          duration: 1.2,
+          ease: "power2.inOut",
+        }, 0.8);
+      }
+
       tl.eventCallback("onComplete", () => {
         window.clearTimeout(failsafe);
         complete();
       });
 
-      const cancelReady = whenIntroReady(() => tl.play(0));
+      // Start playing
+      tl.play(0);
 
       return () => {
-        cancelReady();
         window.clearTimeout(failsafe);
         tl.kill();
         if (!finished) {
@@ -108,7 +92,7 @@ export function LogoIntro() {
         }
       };
     },
-    { scope: root, dependencies: [reduced, mobile, dismissed], revertOnUpdate: false },
+    { scope: root, dependencies: [reduced, dismissed], revertOnUpdate: false },
   );
 
   if (dismissed) return null;
@@ -116,7 +100,7 @@ export function LogoIntro() {
   return (
     <div
       ref={root}
-      className="fixed inset-0 z-[100] flex touch-none items-center justify-center select-none"
+      className="fixed inset-0 z-[100] flex touch-none items-center justify-center select-none overflow-hidden"
       role="status"
       aria-label="Loading Blayz"
     >
