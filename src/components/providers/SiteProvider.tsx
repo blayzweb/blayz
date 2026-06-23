@@ -49,8 +49,20 @@ export function useSite(): SiteContextValue {
   return ctx;
 }
 
+/** Scroll ratio captured before ScrollTrigger remeasures layout (e.g. browser zoom). */
+function scrollRatio(lenisScroll: number): number {
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  return max > 0 ? lenisScroll / max : 0;
+}
+
+function scrollFromRatio(ratio: number): number {
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  return Math.round(ratio * max);
+}
+
 export function SiteProvider({ children }: { children: React.ReactNode }) {
   const lenisRef = useRef<LenisRef>(null);
+  const scrollRatioRef = useRef<number | null>(null);
   const [atHeroStart, setAtHeroStart] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<SectionId>("hero");
@@ -120,10 +132,30 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
 
     lenis.on("scroll", onScroll);
     onScroll();
-    const onRefresh = () => lenis.resize();
+
+    // Browser zoom fires resize → ScrollTrigger refresh → pin remeasure can jump
+    // scroll back to the hero. Preserve relative scroll position across refresh.
+    const onRefreshInit = () => {
+      scrollRatioRef.current = scrollRatio(lenis.scroll);
+    };
+
+    const onRefresh = () => {
+      const ratio = scrollRatioRef.current;
+      lenis.resize();
+
+      if (ratio !== null) {
+        const target = scrollFromRatio(ratio);
+        lenis.scrollTo(target, { immediate: true });
+        ScrollTrigger.update();
+        scrollRatioRef.current = null;
+      }
+    };
+
+    ScrollTrigger.addEventListener("refreshInit", onRefreshInit);
     ScrollTrigger.addEventListener("refresh", onRefresh);
     return () => {
       lenis.off("scroll", onScroll);
+      ScrollTrigger.removeEventListener("refreshInit", onRefreshInit);
       ScrollTrigger.removeEventListener("refresh", onRefresh);
       ScrollTrigger.scrollerProxy(document.documentElement, {});
     };

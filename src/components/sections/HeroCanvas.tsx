@@ -161,6 +161,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
         scrub: 0.8,
         pin: pinRef.current,
         anticipatePin: 1,
+        invalidateOnRefresh: true,
         onRefresh: () => {
           // Keep canvas dimensions synced on layout changes
           canvas.width = window.innerWidth;
