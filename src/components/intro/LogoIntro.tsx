@@ -10,7 +10,7 @@ import { LOGO_PATH } from "./logoPath";
 /**
  * Stage A intro (PRD §6.1).
  * Custom B&W Zoom-reveal transition:
- * - A white logo is centered on a black background.
+ * - A white logo starts small and centered on a black background.
  * - Gentle breathing pulse while loading the 3D assets.
  * - When loaded, zooms through a mask cutout in the black background.
  * - The white logo fades to transparent, revealing the 3D scene inside the letters.
@@ -37,15 +37,15 @@ export function LogoIntro() {
       if (dismissed) return;
 
       if (!heroLoaded) {
-        // While loading, play a gentle pulsing animation to show activity
+        // While loading, play a gentle pulsing animation around the 0.25 starting scale
         if (whiteLogoRef.current) {
           pulseTweenRef.current = gsap.to(whiteLogoRef.current, {
-            scale: 1.03,
+            scale: 0.26,
             duration: 1.2,
             repeat: -1,
             yoyo: true,
             ease: "sine.inOut",
-            transformOrigin: "center center",
+            transformOrigin: "724px 362px",
           });
         }
         return;
@@ -82,25 +82,32 @@ export function LogoIntro() {
         tl.to(whiteLogoRef.current, { opacity: 0, duration: 0.6 }, 0.2)
           .to(backdropRef.current, { opacity: 0, duration: 0.6 }, 0.2);
       } else {
-        // Reset/align elements
+        // Set initial state: start small (scale 0.25) centered on the logo
         gsap.set([whiteLogoRef.current, maskLogoRef.current], {
-          scale: 1,
-          transformOrigin: "center center",
+          scale: 0.25,
+          transformOrigin: "724px 362px",
         });
         gsap.set(whiteLogoRef.current, { opacity: 1 });
         gsap.set(backdropRef.current, { opacity: 1 });
 
-        // Zoom through the logo cutout, and fade out the top white overlay
+        // Phase 1: Slowly zoom in and fade white logo to transparent to reveal the 3D scene inside
         tl.to([whiteLogoRef.current, maskLogoRef.current], {
-          scale: 65,
+          scale: 1.2,
           duration: 2.2,
-          ease: "power2.inOut",
+          ease: "power1.out",
         }, 0)
         .to(whiteLogoRef.current, {
           opacity: 0,
-          duration: 1.1,
+          duration: 1.8,
           ease: "power1.inOut",
-        }, 0.2);
+        }, 0)
+
+        // Phase 2: Zoom INTO the transparent cutout to reveal the full scene
+        .to(maskLogoRef.current, {
+          scale: 85,
+          duration: 1.2,
+          ease: "power2.in",
+        }, 1.9); // starts slightly before Phase 1 ends
       }
 
       tl.eventCallback("onComplete", () => {
@@ -144,7 +151,7 @@ export function LogoIntro() {
             {/* Opaque white background rect: keeps the black rect visible */}
             <rect x="-5000" y="-5000" width="11448" height="10724" fill="white" />
             {/* Black logo cutout group: cuts a transparent hole in the mask */}
-            <g ref={maskLogoRef}>
+            <g ref={maskLogoRef} style={{ transformOrigin: "724px 362px" }}>
               <path d={LOGO_PATH} fill="black" />
             </g>
           </mask>
@@ -162,7 +169,7 @@ export function LogoIntro() {
         />
 
         {/* Solid white logo group on top of the cutout hole */}
-        <g ref={whiteLogoRef}>
+        <g ref={whiteLogoRef} style={{ transformOrigin: "724px 362px" }}>
           <path d={LOGO_PATH} fill="white" />
         </g>
       </svg>
