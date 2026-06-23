@@ -39,9 +39,6 @@ interface SiteContextValue {
   quote: QuotePrefill | null;
   /** Stash a build config and jump to the contact form. */
   requestQuote: (quote: QuotePrefill) => void;
-  /** Shared preloading state for the 3D assets to sync the intro animation reveal. */
-  heroLoaded: boolean;
-  setHeroLoaded: (v: boolean) => void;
 }
 
 const SiteContext = createContext<SiteContextValue | null>(null);
@@ -59,7 +56,6 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
   const [activeSection, setActiveSection] = useState<SectionId>("hero");
   const [introDone, setIntroDone] = useState(false);
   const [quote, setQuote] = useState<QuotePrefill | null>(null);
-  const [heroLoaded, setHeroLoaded] = useState(false);
 
   // Drive Lenis from GSAP's ticker so scroll + ScrollTrigger stay in sync.
   useEffect(() => {
@@ -175,10 +171,8 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
       lockScroll,
       quote,
       requestQuote,
-      heroLoaded,
-      setHeroLoaded,
     }),
-    [atHeroStart, scrolled, activeSection, introDone, scrollTo, lockScroll, quote, requestQuote, heroLoaded],
+    [atHeroStart, scrolled, activeSection, introDone, scrollTo, lockScroll, quote, requestQuote],
   );
 
   return (
