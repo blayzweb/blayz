@@ -64,14 +64,14 @@ export function LogoIntro() {
         tl.to(stage.current, {
           scale: 45,
           opacity: 0,
-          duration: 1.6,
+          duration: 2.2,
           ease: "power2.inOut",
         }, 0.5)
         .to(backdrop.current, {
           opacity: 0,
-          duration: 1.2,
+          duration: 1.8,
           ease: "power2.inOut",
-        }, 0.8);
+        }, 0.6);
       }
 
       tl.eventCallback("onComplete", () => {
