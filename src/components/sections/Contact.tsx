@@ -50,7 +50,7 @@ const SOCIAL_LINKS = [
   },
   {
     label: "LinkedIn",
-    href: "#",
+    href: "https://www.linkedin.com/in/blayz-⠀-bb1b8b418",
     icon: (
       <svg className="size-5" viewBox="0 0 24 24" aria-hidden>
         <path
@@ -382,15 +382,6 @@ function ContactAside({
               </span>
             ))}
           </nav>
-
-          <p className="mt-5 font-mono text-xs leading-relaxed text-blayz-ink/45">
-            based in{" "}
-            <span className="text-blayz-ink/70">Dubai, UAE</span>
-            <span aria-hidden className="mx-2 text-blayz-ink/20">
-              ·
-            </span>
-            worldwide
-          </p>
         </ThreadBlock>
       </div>
 

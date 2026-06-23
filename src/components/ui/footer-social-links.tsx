@@ -22,7 +22,7 @@ const socialLinks = [
   },
   {
     label: "LinkedIn",
-    href: "#",
+    href: "https://www.linkedin.com/in/blayz-⠀-bb1b8b418",
     icon: (
       <svg
         className="size-6"
