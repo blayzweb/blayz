@@ -20,9 +20,9 @@ function HomeContent() {
     <>
       <LogoIntro />
 
-      {/* Site stays hidden until the intro finishes — no flash-through on mobile. */}
+      {/* Site container is visible behind the intro to allow the 3D canvas to show through during zoom-out. */}
       <div
-        className={introDone ? "contents" : "pointer-events-none invisible"}
+        className={introDone ? "contents" : "pointer-events-none"}
         aria-hidden={!introDone}
       >
         <Header />
