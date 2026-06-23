@@ -15,6 +15,7 @@ import {
   type Addon,
   type PricingTier,
 } from "@/content/pricing";
+import { AsciiFlames } from "@/components/ui/AsciiFlames";
 import { Money } from "@/components/ui/money";
 
 /**
@@ -82,7 +83,37 @@ export function ConfiguratorModal({
       transition={{ duration: 0.25 }}
       className="fixed inset-0 z-[100] bg-blayz-ink/95 backdrop-blur-sm"
     >
-      <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
+      {/* ASCII fire in the side gutters — same effect as the footer */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 hidden lg:grid lg:grid-cols-[1fr_minmax(0,72rem)_1fr]"
+      >
+        <div
+          className="relative h-full overflow-hidden"
+          style={{
+            maskImage:
+              "linear-gradient(to right, black 0%, black 55%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to right, black 0%, black 55%, transparent 100%)",
+          }}
+        >
+          <AsciiFlames className="h-full w-full" />
+        </div>
+        <div />
+        <div
+          className="relative h-full overflow-hidden"
+          style={{
+            maskImage:
+              "linear-gradient(to left, black 0%, black 55%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to left, black 0%, black 55%, transparent 100%)",
+          }}
+        >
+          <AsciiFlames className="h-full w-full" />
+        </div>
+      </div>
+
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-6xl flex-col">
         {/* top bar */}
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-8">
           <p className="font-mono text-xs text-white/50">

@@ -3,7 +3,7 @@ import Link from "next/link";
 const socialLinks = [
   {
     label: "Instagram",
-    href: "#",
+    href: "https://www.instagram.com/blayzae/",
     icon: (
       <svg
         className="size-6"

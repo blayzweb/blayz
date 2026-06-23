@@ -38,7 +38,7 @@ const NEXT_STEPS = [
 const SOCIAL_LINKS = [
   {
     label: "Instagram",
-    href: "#",
+    href: "https://www.instagram.com/blayzae/",
     icon: (
       <svg className="size-5" viewBox="0 0 24 24" aria-hidden>
         <path
