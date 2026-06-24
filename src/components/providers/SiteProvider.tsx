@@ -271,6 +271,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
       ref={lenisRef}
       options={{ autoRaf: false, lerp: 0.1, smoothWheel: true }}
     >
+      <meta name="theme-color" content={scrolled ? "#fff2e2" : "#000000"} />
       <SiteContext.Provider value={value}>{children}</SiteContext.Provider>
     </ReactLenis>
   );
