@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type RefObject } from "react";
 
 interface FooterClampInsets {
   top: number;
@@ -46,6 +46,63 @@ export function useFooterClamp(
   }, [enabled, headerOffset, gap]);
 
   return inset;
+}
+
+/**
+ * Keeps a compact sidebar vertically centered until the footer would overlap it,
+ * then shifts up only as much as needed — no shrinking flex box re-centering.
+ */
+export function useSidebarTop(
+  navRef: RefObject<HTMLElement | null>,
+  enabled: boolean,
+  { headerOffset = 72, gap = 12 }: { headerOffset?: number; gap?: number } = {},
+): number {
+  const [top, setTop] = useState(headerOffset);
+
+  const measure = useCallback(() => {
+    const nav = navRef.current;
+    const navHeight = nav?.offsetHeight ?? 0;
+    const viewportH = window.innerHeight;
+
+    if (navHeight === 0) return;
+
+    const centeredTop = (viewportH - navHeight) / 2;
+    let nextTop = centeredTop;
+
+    const footer = document.getElementById("footer");
+    if (footer) {
+      const footerTop = footer.getBoundingClientRect().top;
+      const maxTop = footerTop - gap - navHeight;
+      if (nextTop > maxTop) nextTop = maxTop;
+    }
+
+    nextTop = Math.max(headerOffset, nextTop);
+    setTop((prev) => (prev === nextTop ? prev : nextTop));
+  }, [navRef, headerOffset, gap]);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    measure();
+
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure, { passive: true });
+
+    const nav = navRef.current;
+    const resizeObserver =
+      nav && typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(measure)
+        : null;
+    if (nav && resizeObserver) resizeObserver.observe(nav);
+
+    return () => {
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+      resizeObserver?.disconnect();
+    };
+  }, [enabled, measure, navRef]);
+
+  return top;
 }
 
 /** Scroll progress 0–1 for content above the footer. */

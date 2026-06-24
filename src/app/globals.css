@@ -45,6 +45,12 @@ html {
   scroll-behavior: auto;
 }
 
+/* Home intro: black page chrome until the overlay is ready (avoids cream flash). */
+html.intro-active,
+html.intro-active body {
+  background: #000;
+}
+
 body {
   font-family: var(--font-satoshi), system-ui, sans-serif;
   background: var(--blayz-cream);
@@ -91,6 +97,29 @@ html.lenis body {
   background-image: var(--watermark-src, none);
   background-repeat: repeat;
   background-size: 480px;
+}
+
+/* Intro backdrop hole — base size measured in JS, scale driven by GSAP */
+.intro-backdrop {
+  --hole-scale: 1;
+  --hole-w-base: 44vw;
+  --hole-h-base: 22vw;
+  --hole-w: calc(var(--hole-w-base) * var(--hole-scale));
+  --hole-h: calc(var(--hole-h-base) * var(--hole-scale));
+}
+
+@media (min-width: 640px) {
+  .intro-backdrop {
+    --hole-w-base: 32vw;
+    --hole-h-base: 16vw;
+  }
+}
+
+@media (min-width: 1024px) {
+  .intro-backdrop {
+    --hole-w-base: 24rem;
+    --hole-h-base: 12rem;
+  }
 }
 
 

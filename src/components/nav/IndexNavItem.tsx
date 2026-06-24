@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { SectionMeta } from "@/lib/sections";
+import type { SectionMeta, SidebarSurface } from "@/lib/sections";
 import { clsx } from "@/lib/clsx";
 import { navDockTransition } from "@/lib/nav-motion";
 
@@ -9,6 +9,7 @@ interface IndexNavItemProps {
   section: SectionMeta;
   active?: boolean;
   variant: "hero" | "sidebar";
+  surface?: SidebarSurface;
   layoutId: string;
   onClick: () => void;
   staggerIndex?: number;
@@ -23,12 +24,17 @@ export function IndexNavItem({
   section,
   active = false,
   variant,
+  surface = "light",
   layoutId,
   onClick,
   staggerIndex = 0,
   introDone = true,
 }: IndexNavItemProps) {
   const isHero = variant === "hero";
+  const onDark = !isHero && surface === "dark";
+  const activeGlow = onDark
+    ? "drop-shadow-[0_0_10px_rgba(26,26,26,0.65)]"
+    : "drop-shadow-[0_0_10px_rgba(255,242,226,0.9)]";
 
   return (
     <motion.button
@@ -62,12 +68,14 @@ export function IndexNavItem({
       <motion.span
         layout="position"
         className={clsx(
-          "font-sans font-bold tabular-nums transition-colors duration-300 ease-out",
+          "font-sans font-bold tabular-nums transition-colors duration-500 ease-out",
           isHero
             ? "text-sm text-blayz-orange"
             : active
-              ? "text-blayz-orange"
-              : "text-blayz-ink/35 group-hover:text-blayz-ink/55",
+              ? clsx("text-blayz-orange", activeGlow)
+              : onDark
+                ? "text-blayz-cream/40 group-hover:text-blayz-cream/65"
+                : "text-blayz-ink/35 group-hover:text-blayz-ink/55",
         )}
       >
         [ {section.index} ]
@@ -78,8 +86,11 @@ export function IndexNavItem({
           <>
             <motion.span
               className={clsx(
-                "block",
-                !active && "font-sans text-[11px] text-blayz-ink/50 group-hover:text-blayz-ink",
+                "block transition-colors duration-500 ease-out",
+                !active &&
+                  (onDark
+                    ? "font-sans text-[11px] text-blayz-cream/45 group-hover:text-blayz-cream/75"
+                    : "font-sans text-[11px] text-blayz-ink/50 group-hover:text-blayz-ink"),
               )}
               animate={{ opacity: active ? 0 : 1 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
@@ -88,7 +99,7 @@ export function IndexNavItem({
               {section.label}
             </motion.span>
             <motion.span
-              className="absolute inset-0 text-blayz-orange"
+              className={clsx("absolute inset-0 text-blayz-orange", activeGlow)}
               animate={{ opacity: active ? 1 : 0 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
               aria-hidden={!active}

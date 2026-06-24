@@ -1,22 +1,18 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { useSite } from "@/components/providers/SiteProvider";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { INTRO_FAILSAFE_MS, lockPageScroll } from "./introUtils";
-import { IntroBackdrop, IntroStage } from "./IntroStage";
+import {
+  INTRO_FAILSAFE_MS,
+  INTRO_HOLD_BEFORE_ZOOM_S,
+  lockPageScroll,
+  setIntroPageBackground,
+} from "./introUtils";
+import { IntroBackdrop, IntroStage, measureIntroHole } from "./IntroStage";
 
-/** Keep the backdrop mask hole aligned with the GSAP-scaled stage element. */
-function syncHole(
-  stage: HTMLDivElement | null,
-  backdrop: HTMLDivElement | null,
-) {
-  if (!stage || !backdrop) return;
-  const { width, height } = stage.getBoundingClientRect();
-  backdrop.style.setProperty("--hole-w", `${width}px`);
-  backdrop.style.setProperty("--hole-h", `${height}px`);
-}
+const INTRO_ZOOM_SCALE = 45;
 
 /**
  * Stage A intro (PRD §6.1).
@@ -32,7 +28,16 @@ export function LogoIntro() {
   const backdrop = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
 
+  useLayoutEffect(() => {
+    setIntroPageBackground(true);
+    if (stage.current && backdrop.current) {
+      measureIntroHole(stage.current, backdrop.current);
+    }
+    return () => setIntroPageBackground(false);
+  }, []);
+
   const finish = useCallback(() => {
+    setIntroPageBackground(false);
     setIntroDone(true);
     setDismissed(true);
   }, [setIntroDone]);
@@ -62,30 +67,24 @@ export function LogoIntro() {
       const failsafe = window.setTimeout(complete, INTRO_FAILSAFE_MS);
 
       const tl = gsap.timeline({ paused: true });
-
-      const stageEl = stage.current;
       const backdropEl = backdrop.current;
 
       if (reduced) {
-        tl.to(stageEl, { opacity: 0, duration: 0.6 }, 0.2)
-          .to(backdropEl, { opacity: 0, duration: 0.6 }, 0.2);
+        tl.to(backdropEl, { opacity: 0, duration: 0.6 }, 0.2);
       } else {
-        gsap.set(stageEl, { scale: 1, opacity: 1, transformOrigin: "center center" });
-        gsap.set(backdropEl, { opacity: 1 });
-        syncHole(stageEl, backdropEl);
+        measureIntroHole(stage.current, backdropEl);
+        gsap.set(backdropEl, { opacity: 1, "--hole-scale": 1 });
 
-        tl.to(stageEl, {
-          scale: 45,
-          opacity: 0,
+        tl.to(backdropEl, {
+          "--hole-scale": INTRO_ZOOM_SCALE,
           duration: 2.2,
           ease: "power2.inOut",
-          onUpdate: () => syncHole(stageEl, backdropEl),
-        }, 0.5)
+        }, INTRO_HOLD_BEFORE_ZOOM_S)
           .to(backdropEl, {
             opacity: 0,
             duration: 1.8,
             ease: "power2.inOut",
-          }, 0.6);
+          }, INTRO_HOLD_BEFORE_ZOOM_S + 0.1);
       }
 
       tl.eventCallback("onComplete", () => {

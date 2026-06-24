@@ -247,7 +247,10 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
       className="relative w-full"
       style={{ height: `${HERO_HEIGHT_VH}vh` }}
     >
-      <div ref={pinRef} className="relative h-screen w-full overflow-hidden bg-blayz-cream">
+      <div
+        ref={pinRef}
+        className={`relative h-screen w-full overflow-hidden ${introDone ? "bg-blayz-cream" : "bg-black"}`}
+      >
         {/* Canvas background wrapper container */}
         <div
           ref={canvasContainerRef}

@@ -156,6 +156,7 @@ export function AboutToServicesTransition() {
   return (
     <div
       ref={containerRef}
+      data-nav-surface="pattern"
       className="relative h-28 w-full overflow-hidden bg-blayz-cream"
     >
       <div className="absolute inset-0 flex flex-col justify-stretch">

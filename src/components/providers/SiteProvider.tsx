@@ -69,6 +69,16 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
   const [introDone, setIntroDone] = useState(false);
   const [quote, setQuote] = useState<QuotePrefill | null>(null);
 
+  // Fresh loads (including refresh) should always start at the hero, not where
+  // the browser last restored scroll.
+  useEffect(() => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+    lenisRef.current?.lenis?.scrollTo(0, { immediate: true });
+  }, []);
+
   // Drive Lenis from GSAP's ticker so scroll + ScrollTrigger stay in sync.
   useEffect(() => {
     function raf(time: number) {
@@ -85,6 +95,8 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const lenis = lenisRef.current?.lenis;
     if (!lenis) return;
+
+    lenis.scrollTo(0, { immediate: true });
 
     ScrollTrigger.scrollerProxy(document.documentElement, {
       scrollTop(value?: number) {

@@ -49,6 +49,12 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){if('scrollRestoration' in history)history.scrollRestoration='manual';window.scrollTo(0,0);var p=location.pathname;if(p==='/'||p==='')document.documentElement.classList.add('intro-active')})();",
+          }}
+        />
         <link
           rel="preload"
           as="image"

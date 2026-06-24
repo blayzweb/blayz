@@ -1,21 +1,145 @@
 "use client";
 
-const steppedBorderPath = "M 0 0 L 1440 0 L 1440 60 L 1430 60 L 1430 70 L 1420 70 L 1420 80 L 1410 80 L 1410 90 L 1400 90 L 1400 80 L 1390 80 L 1390 70 L 1380 70 L 1380 60 L 1370 60 L 1370 70 L 1360 70 L 1360 80 L 1350 80 L 1350 90 L 1340 90 L 1340 80 L 1330 80 L 1330 70 L 1320 70 L 1320 60 L 1310 60 L 1310 70 L 1300 70 L 1300 80 L 1290 80 L 1290 90 L 1280 90 L 1280 80 L 1270 80 L 1270 70 L 1260 70 L 1260 60 L 1250 60 L 1250 70 L 1240 70 L 1240 80 L 1230 80 L 1230 90 L 1220 90 L 1220 80 L 1210 80 L 1210 70 L 1200 70 L 1200 60 L 1190 60 L 1190 70 L 1180 70 L 1180 80 L 1170 80 L 1170 90 L 1160 90 L 1160 80 L 1150 80 L 1150 70 L 1140 70 L 1140 60 L 1130 60 L 1130 70 L 1120 70 L 1120 80 L 1110 80 L 1110 90 L 1100 90 L 1100 80 L 1090 80 L 1090 70 L 1080 70 L 1080 60 L 1070 60 L 1070 70 L 1060 70 L 1060 80 L 1050 80 L 1050 90 L 1040 90 L 1040 80 L 1030 80 L 1030 70 L 1020 70 L 1020 60 L 1010 60 L 1010 70 L 1000 70 L 1000 80 L 990 80 L 990 90 L 980 90 L 980 80 L 970 80 L 970 70 L 960 70 L 960 60 L 950 60 L 950 70 L 940 70 L 940 80 L 930 80 L 930 90 L 920 90 L 920 80 L 910 80 L 910 70 L 900 70 L 900 60 L 890 60 L 890 70 L 880 70 L 880 80 L 870 80 L 870 90 L 860 90 L 860 80 L 850 80 L 850 70 L 840 70 L 840 60 L 830 60 L 830 70 L 820 70 L 820 80 L 810 80 L 810 90 L 800 90 L 800 80 L 790 80 L 790 70 L 780 70 L 780 60 L 770 60 L 770 70 L 760 70 L 760 80 L 750 80 L 750 90 L 740 90 L 740 80 L 730 80 L 730 70 L 720 70 L 720 60 L 710 60 L 710 70 L 700 70 L 700 80 L 690 80 L 690 90 L 680 90 L 680 80 L 670 80 L 670 70 L 660 70 L 660 60 L 650 60 L 650 70 L 640 70 L 640 80 L 630 80 L 630 90 L 620 90 L 620 80 L 610 80 L 610 70 L 600 70 L 600 60 L 590 60 L 590 70 L 580 70 L 580 80 L 570 80 L 570 90 L 560 90 L 560 80 L 550 80 L 550 70 L 540 70 L 540 60 L 530 60 L 530 70 L 520 70 L 520 80 L 510 80 L 510 90 L 500 90 L 500 80 L 490 80 L 490 70 L 480 70 L 480 60 L 470 60 L 470 70 L 460 70 L 460 80 L 450 80 L 450 90 L 440 90 L 440 80 L 430 80 L 430 70 L 420 70 L 420 60 L 410 60 L 410 70 L 400 70 L 400 80 L 390 80 L 390 90 L 380 90 L 380 80 L 370 80 L 370 70 L 360 70 L 360 60 L 350 60 L 350 70 L 340 70 L 340 80 L 330 80 L 330 90 L 320 90 L 320 80 L 310 80 L 310 70 L 300 70 L 300 60 L 290 60 L 290 70 L 280 70 L 280 80 L 270 80 L 270 90 L 260 90 L 260 80 L 250 80 L 250 70 L 240 70 L 240 60 L 230 60 L 230 70 L 220 70 L 220 80 L 210 80 L 210 90 L 200 90 L 200 80 L 190 80 L 190 70 L 180 70 L 180 60 L 170 60 L 170 70 L 160 70 L 160 80 L 150 80 L 150 90 L 140 90 L 140 80 L 130 80 L 130 70 L 120 70 L 120 60 L 110 60 L 110 70 L 100 70 L 100 80 L 90 80 L 90 90 L 80 90 L 80 80 L 70 80 L 70 70 L 60 70 L 60 60 L 50 60 L 50 70 L 40 70 L 40 80 L 30 80 L 30 90 L 20 90 L 20 80 L 10 80 L 10 70 L 0 70 L 0 60 Z";
+import { useEffect, useRef } from "react";
+import { useReducedMotion } from "@/lib/useReducedMotion";
+
+const WIDTH = 1440;
+const HEIGHT = 120;
+const PERIOD = 60;
+const STEP = 10;
+const INK = "#1A1A1A";
+const BASE_HEIGHTS = [60, 70, 80, 90, 80, 70] as const;
+
+const WAVE = {
+  amplitude: 5,
+  wavelength: 360,
+  speed: 1.05,
+} as const;
+
+function steppedY(x: number): number {
+  const local = ((x % PERIOD) + PERIOD) % PERIOD;
+  return BASE_HEIGHTS[Math.floor(local / STEP)] ?? 60;
+}
+
+/** Two blended sines — continuous flow without shearing the pixel steps. */
+function waveOffset(x: number, time: number): number {
+  const phase = (x / WAVE.wavelength) * Math.PI * 2 - time * WAVE.speed;
+  return (
+    WAVE.amplitude * Math.sin(phase) +
+    WAVE.amplitude * 0.22 * Math.sin(phase * 1.6 + 0.9)
+  );
+}
+
+function yAt(x: number, time: number): number {
+  return Math.min(HEIGHT - 4, Math.max(50, steppedY(x) + waveOffset(x, time)));
+}
+
+function traceFlagPath(
+  ctx: CanvasRenderingContext2D,
+  time: number,
+  mapX: (x: number) => number,
+  mapY: (y: number) => number,
+) {
+  const y = (x: number) => yAt(x, time);
+
+  ctx.beginPath();
+  ctx.moveTo(mapX(0), mapY(0));
+  ctx.lineTo(mapX(WIDTH), mapY(0));
+  ctx.lineTo(mapX(WIDTH), mapY(y(WIDTH)));
+
+  let cy = y(WIDTH);
+  for (let x = WIDTH - STEP; x >= 0; x -= STEP) {
+    const ny = y(x);
+    ctx.lineTo(mapX(x), mapY(cy));
+    ctx.lineTo(mapX(x), mapY(ny));
+    cy = ny;
+  }
+
+  ctx.closePath();
+}
+
+function sliceTransform(
+  width: number,
+  height: number,
+): { mapX: (x: number) => number; mapY: (y: number) => number } {
+  const scale = Math.max(width / WIDTH, height / HEIGHT);
+  const offsetX = (width - WIDTH * scale) / 2;
+  const offsetY = (height - HEIGHT * scale) / 2;
+  return {
+    mapX: (x) => offsetX + x * scale,
+    mapY: (y) => offsetY + y * scale,
+  };
+}
 
 export function ServicesToPricingTransition() {
+  const reduced = useReducedMotion();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let raf = 0;
+    let start = performance.now();
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+
+    const resize = () => {
+      const rect = wrap.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+    };
+
+    const draw = (now: number) => {
+      const t = reduced ? 0 : (now - start) / 1000;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+
+      const { mapX, mapY } = sliceTransform(width, height);
+      traceFlagPath(ctx, t, mapX, mapY);
+      ctx.fillStyle = INK;
+      ctx.fill();
+
+      if (!reduced) raf = requestAnimationFrame(draw);
+    };
+
+    resize();
+    const ro = new ResizeObserver(() => {
+      resize();
+      if (reduced) draw(performance.now());
+    });
+    ro.observe(wrap);
+
+    if (reduced) {
+      draw(start);
+    } else {
+      raf = requestAnimationFrame(draw);
+    }
+
+    return () => {
+      ro.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, [reduced]);
+
   return (
-    <div className="relative z-10 h-32 w-full bg-blayz-cream-deep overflow-hidden">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <svg
-          viewBox="0 0 1440 120"
-          className="h-full w-full"
-          preserveAspectRatio="xMidYMid slice"
-          shapeRendering="crispEdges"
-          aria-hidden
-        >
-          {/* Stepped pixel-art chevron background transition from dark ink (#1A1A1A) to cream */}
-          <path d={steppedBorderPath} fill="#1A1A1A" />
-        </svg>
+    <div className="relative z-10 h-32 w-full overflow-hidden bg-blayz-cream-deep">
+      <div
+        ref={wrapRef}
+        className="absolute inset-0"
+        aria-hidden
+      >
+        <canvas ref={canvasRef} className="block h-full w-full" />
       </div>
     </div>
   );
