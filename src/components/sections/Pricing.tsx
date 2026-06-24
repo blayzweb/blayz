@@ -42,7 +42,7 @@ export function Pricing() {
   return (
     <section
       id="pricing"
-      className="relative overflow-hidden bg-blayz-cream-deep px-6 md:px-28 lg:px-36 pt-14 pb-14"
+      className="relative bg-blayz-cream-deep px-6 md:px-28 lg:px-36 pt-14 pb-28"
     >
       <div className="mx-auto max-w-6xl">
         <p className="mb-4 font-sans text-sm text-[#7A1118]">
@@ -72,8 +72,8 @@ export function Pricing() {
                 className={clsx(
                   "flex flex-col overflow-hidden rounded-2xl border bg-[#F4EFE7]",
                   tier.featured
-                    ? "border-[#7A1118] shadow-[0_40px_90px_-50px_rgba(122,17,24,0.6)]"
-                    : "border-[#4A090D]/25 shadow-[0_30px_70px_-50px_rgba(23,19,19,0.55)]",
+                    ? "border-[#7A1118] shadow-[0_20px_40px_-8px_rgba(122,17,24,0.45),0_48px_96px_-16px_rgba(122,17,24,0.35)]"
+                    : "border-[#4A090D]/25 shadow-[0_16px_32px_-6px_rgba(23,19,19,0.35),0_36px_72px_-12px_rgba(23,19,19,0.28)]",
                 )}
               >
                 <TatreezBorder
