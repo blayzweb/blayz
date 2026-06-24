@@ -28,8 +28,27 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
   const currentFrameRef = useRef(1);
   const firstFrameDrawnRef = useRef(false);
 
-  const drawFrameToCanvas = (frameIndex: number) => {
+  const getClosestLoadedImage = (frameIndex: number): HTMLImageElement | undefined => {
     const img = imagesRef.current[frameIndex];
+    if (img && img.width > 0) return img;
+
+    let closestIdx = 1;
+    let minDiff = Infinity;
+    for (let i = 1; i <= 300; i++) {
+      const checkImg = imagesRef.current[i];
+      if (checkImg && checkImg.width > 0) {
+        const diff = Math.abs(i - frameIndex);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestIdx = i;
+        }
+      }
+    }
+    return imagesRef.current[closestIdx];
+  };
+
+  const drawFrameToCanvas = (frameIndex: number) => {
+    const img = getClosestLoadedImage(frameIndex);
     const canvas = canvasRef.current;
     if (!img?.width || !canvas) return false;
 
@@ -61,27 +80,39 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
     }
   };
 
-  // Preload frame 1 first so the intro cutout shows the scene immediately.
+  // Preload frames progressively so the experience is interactive quickly.
   useEffect(() => {
     const loadedImages: HTMLImageElement[] = [];
     imagesRef.current = loadedImages;
 
-    let loadedCount = 0;
     const totalImages = 300;
 
-    const registerFrame = (frameIndex: number, img: HTMLImageElement) => {
+    // Define draft frames: e.g. every 10th frame, plus first and last.
+    const draftIndices = [1];
+    for (let i = 11; i < totalImages; i += 10) {
+      draftIndices.push(i);
+    }
+    if (!draftIndices.includes(totalImages)) {
+      draftIndices.push(totalImages);
+    }
+
+    let draftLoadedCount = 0;
+
+    const registerDraftFrame = (frameIndex: number, img: HTMLImageElement) => {
       loadedImages[frameIndex] = img;
 
       const afterDecode = () => {
-        loadedCount++;
-        setLoadProgress(Math.round((loadedCount / totalImages) * 100));
+        draftLoadedCount++;
+        setLoadProgress(Math.round((draftLoadedCount / draftIndices.length) * 100));
 
         if (frameIndex === 1) {
           paintFirstFrame();
         }
 
-        if (loadedCount === totalImages) {
+        if (draftLoadedCount === draftIndices.length) {
           setImagesLoaded(true);
+          // Start preloading the remaining gap frames in background batches.
+          loadRemainingFrames();
         }
       };
 
@@ -92,17 +123,59 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
       }
     };
 
-    const loadFrame = (frameIndex: number) => {
+    const loadDraftFrame = (frameIndex: number) => {
       const img = new Image();
       img.src = `/assets/hero-sequence/frame_${String(frameIndex).padStart(4, "0")}.webp`;
-      img.onload = () => registerFrame(frameIndex, img);
-      img.onerror = () => registerFrame(frameIndex, img);
+      img.onload = () => registerDraftFrame(frameIndex, img);
+      img.onerror = () => registerDraftFrame(frameIndex, img);
     };
 
-    loadFrame(1);
-    for (let i = 2; i <= totalImages; i++) {
-      loadFrame(i);
-    }
+    // Load Phase 2 (Draft sequence)
+    draftIndices.forEach((idx) => {
+      loadDraftFrame(idx);
+    });
+
+    const loadRemainingFrames = () => {
+      const remainingIndices: number[] = [];
+      for (let i = 1; i <= totalImages; i++) {
+        if (!draftIndices.includes(i)) {
+          remainingIndices.push(i);
+        }
+      }
+
+      const BATCH_SIZE = 6;
+      let activeIndex = 0;
+
+      const loadNextBatch = () => {
+        if (activeIndex >= remainingIndices.length) return;
+        const batch = remainingIndices.slice(activeIndex, activeIndex + BATCH_SIZE);
+        activeIndex += BATCH_SIZE;
+
+        Promise.all(
+          batch.map((idx) => {
+            return new Promise<void>((resolve) => {
+              const img = new Image();
+              img.src = `/assets/hero-sequence/frame_${String(idx).padStart(4, "0")}.webp`;
+              img.onload = () => {
+                loadedImages[idx] = img;
+                if (typeof img.decode === "function") {
+                  img.decode().then(() => resolve()).catch(() => resolve());
+                } else {
+                  resolve();
+                }
+              };
+              img.onerror = () => {
+                resolve();
+              };
+            });
+          })
+        ).then(() => {
+          loadNextBatch();
+        });
+      };
+
+      loadNextBatch();
+    };
   }, []);
 
   // Keep frame 1 fitted while the intro is playing.
@@ -133,7 +206,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
     };
 
     const drawFrame = (frameIndex: number) => {
-      const img = imagesRef.current[frameIndex];
+      const img = getClosestLoadedImage(frameIndex);
       const canvas = canvasRef.current;
       if (!img || !canvas) return;
 
@@ -172,9 +245,8 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
     if (!ctx) return;
 
     const drawFrame = (frameIndex: number) => {
-      const img = imagesRef.current[frameIndex];
+      const img = getClosestLoadedImage(frameIndex);
       if (!img || img.width === 0) {
-        console.warn(`[HeroCanvas] Missing or unrendered frame image: ${frameIndex}`);
         return;
       }
 

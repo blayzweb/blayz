@@ -11,9 +11,19 @@ import { AboutUs } from "@/components/sections/AboutUs";
 import { AboutToServicesTransition } from "@/components/ui/AboutToServicesTransition";
 import { Services } from "@/components/sections/Services";
 import { ServicesToPricingTransition } from "@/components/ui/ServicesToPricingTransition";
-import { Pricing } from "@/components/sections/Pricing";
-import { Contact } from "@/components/sections/Contact";
-import { Footer } from "@/components/sections/Footer";
+import dynamic from "next/dynamic";
+
+const Pricing = dynamic(() => import("@/components/sections/Pricing").then((mod) => mod.Pricing), {
+  ssr: true,
+});
+const Contact = dynamic(() => import("@/components/sections/Contact").then((mod) => mod.Contact), {
+  ssr: true,
+});
+const Footer = dynamic(() => import("@/components/sections/Footer").then((mod) => mod.Footer), {
+  ssr: true,
+});
+
+
 
 function HomeContent() {
   const { introDone } = useSite();

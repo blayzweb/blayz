@@ -62,7 +62,7 @@ export default function RootLayout({
           type="image/webp"
         />
       </head>
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

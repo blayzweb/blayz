@@ -2,13 +2,23 @@
 
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { AsciiFlames } from "@/components/ui/AsciiFlames";
 import { FooterLegalLinks } from "@/components/ui/footer-legal-links";
 import { FooterSocialLinks } from "@/components/ui/footer-social-links";
-import { LegalDocumentModal } from "@/components/legal/LegalDocumentModal";
 import { legalDocuments } from "@/content/legal-documents";
 import type { LegalDocumentId } from "@/content/legal-types";
+
+const AsciiFlames = dynamic(
+  () => import("@/components/ui/AsciiFlames").then((mod) => mod.AsciiFlames),
+  { ssr: false }
+);
+
+const LegalDocumentModal = dynamic(
+  () => import("@/components/legal/LegalDocumentModal").then((mod) => mod.LegalDocumentModal),
+  { ssr: false }
+);
+
 
 /**
  * Footer component (PRD §7.5). Hosts the closing </blayz> wordmark and the

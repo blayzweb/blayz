@@ -10,8 +10,14 @@ import {
   headlineFigure,
   type TierId,
 } from "@/content/pricing";
+import dynamic from "next/dynamic";
 import { useSite } from "@/components/providers/SiteProvider";
-import { ConfiguratorModal } from "@/components/configurator/ConfiguratorModal";
+
+const ConfiguratorModal = dynamic(
+  () => import("@/components/configurator/ConfiguratorModal").then((mod) => mod.ConfiguratorModal),
+  { ssr: false }
+);
+
 import { clsx } from "@/lib/clsx";
 import {
   TatreezBorder,
