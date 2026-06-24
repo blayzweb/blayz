@@ -7,10 +7,21 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 import { INTRO_FAILSAFE_MS, lockPageScroll } from "./introUtils";
 import { IntroBackdrop, IntroStage } from "./IntroStage";
 
+/** Keep the backdrop mask hole aligned with the GSAP-scaled stage element. */
+function syncHole(
+  stage: HTMLDivElement | null,
+  backdrop: HTMLDivElement | null,
+) {
+  if (!stage || !backdrop) return;
+  const { width, height } = stage.getBoundingClientRect();
+  backdrop.style.setProperty("--hole-w", `${width}px`);
+  backdrop.style.setProperty("--hole-h", `${height}px`);
+}
+
 /**
  * Stage A intro (PRD §6.1).
- * Displays a white blayz logo centered on a black background,
- * then zooms through the logo into the hero section.
+ * Black backdrop with a logo-shaped window to the hero beneath,
+ * then zooms through the wordmark into the site.
  */
 export function LogoIntro() {
   const { setIntroDone, lockScroll } = useSite();
@@ -52,26 +63,29 @@ export function LogoIntro() {
 
       const tl = gsap.timeline({ paused: true });
 
-      if (reduced) {
-        // Just fade out logo and backdrop under reduced motion preference
-        tl.to(stage.current, { opacity: 0, duration: 0.6 }, 0.2)
-          .to(backdrop.current, { opacity: 0, duration: 0.6 }, 0.2);
-      } else {
-        // Center-zoom the logo, turning opacity down to "go through" it
-        gsap.set(stage.current, { scale: 1, opacity: 1, transformOrigin: "center center" });
-        gsap.set(backdrop.current, { opacity: 1 });
+      const stageEl = stage.current;
+      const backdropEl = backdrop.current;
 
-        tl.to(stage.current, {
+      if (reduced) {
+        tl.to(stageEl, { opacity: 0, duration: 0.6 }, 0.2)
+          .to(backdropEl, { opacity: 0, duration: 0.6 }, 0.2);
+      } else {
+        gsap.set(stageEl, { scale: 1, opacity: 1, transformOrigin: "center center" });
+        gsap.set(backdropEl, { opacity: 1 });
+        syncHole(stageEl, backdropEl);
+
+        tl.to(stageEl, {
           scale: 45,
           opacity: 0,
           duration: 2.2,
           ease: "power2.inOut",
+          onUpdate: () => syncHole(stageEl, backdropEl),
         }, 0.5)
-        .to(backdrop.current, {
-          opacity: 0,
-          duration: 1.8,
-          ease: "power2.inOut",
-        }, 0.6);
+          .to(backdropEl, {
+            opacity: 0,
+            duration: 1.8,
+            ease: "power2.inOut",
+          }, 0.6);
       }
 
       tl.eventCallback("onComplete", () => {
@@ -79,7 +93,6 @@ export function LogoIntro() {
         complete();
       });
 
-      // Play the timeline immediately
       tl.play(0);
 
       return () => {

@@ -137,18 +137,18 @@ export function ConfiguratorModal({
           </button>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-2">
-          {/* showroom — visually right on desktop, on top for mobile */}
-          <div className="order-1 grid shrink-0 place-items-center overflow-hidden bg-gradient-to-br from-blayz-ink to-blayz-ink-soft px-6 py-8 lg:order-2 lg:py-0">
+        <div className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-2">
+          {/* showroom — compact on mobile, full height on md+ */}
+          <div className="order-1 relative flex max-h-[38vh] shrink-0 items-center justify-center overflow-hidden bg-gradient-to-br from-blayz-ink to-blayz-ink-soft px-4 py-4 sm:max-h-[42vh] sm:px-6 sm:py-6 md:order-2 md:max-h-none md:min-h-0 md:py-8 lg:py-0">
             <div className="arabesque-watermark pointer-events-none absolute inset-0 opacity-[0.04]" />
             <SitePreview tier={tier} selected={selected} />
           </div>
 
           {/* options */}
-          <div className="order-2 flex min-h-0 flex-1 flex-col bg-blayz-cream lg:order-1">
+          <div className="order-2 flex min-h-0 flex-1 flex-col bg-blayz-cream md:order-1">
             <div
               data-lenis-prevent
-              className="flex-1 overflow-y-auto px-5 py-6 sm:px-8"
+              className="flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-8 sm:py-6"
             >
               <h2 className="font-display text-3xl font-bold tracking-tight text-blayz-ink">
                 {tier.name}
@@ -177,7 +177,7 @@ export function ConfiguratorModal({
               <p className="mt-8 font-sans font-bold text-xs text-blayz-ink/40">
                 ┌ customize: add-ons
               </p>
-              <div className="mt-3 flex flex-col gap-2.5">
+              <div className="mt-3 flex flex-col gap-2 sm:gap-2.5">
                 {ADDONS.map((addon) => {
                   const included = isIncluded(addon, tier.id);
                   const active = included || selected.includes(addon.id);
@@ -189,7 +189,7 @@ export function ConfiguratorModal({
                       aria-pressed={active}
                       disabled={included}
                       className={clsx(
-                        "group flex items-start gap-3 rounded-lg border p-3.5 text-left transition-colors",
+                        "group flex items-start gap-2.5 rounded-lg border p-3 text-left transition-colors sm:gap-3 sm:p-3.5",
                         active
                           ? "border-blayz-orange bg-blayz-orange/5"
                           : "border-blayz-ink/15 bg-white/40 hover:border-blayz-ink/30",
@@ -238,8 +238,8 @@ export function ConfiguratorModal({
             </div>
 
             {/* estimate + CTA */}
-            <div className="border-t border-blayz-ink/10 bg-blayz-cream-deep px-5 py-4 sm:px-8">
-              <div className="flex items-end justify-between gap-4">
+            <div className="shrink-0 border-t border-blayz-ink/10 bg-blayz-cream-deep px-4 py-3.5 sm:px-8 sm:py-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                 <div>
                   <p className="font-sans font-bold text-[10px] tracking-wide text-blayz-ink/40 uppercase">
                     estimated
@@ -263,7 +263,7 @@ export function ConfiguratorModal({
                 </div>
                 <button
                   onClick={confirm}
-                  className="rounded-lg bg-blayz-orange px-5 py-3 font-sans font-bold text-sm text-blayz-cream transition-colors hover:bg-blayz-ink"
+                  className="w-full rounded-lg bg-blayz-orange px-5 py-3 font-sans font-bold text-sm text-blayz-cream transition-colors hover:bg-blayz-ink sm:w-auto"
                 >
                   &lt; request this build /&gt;
                 </button>

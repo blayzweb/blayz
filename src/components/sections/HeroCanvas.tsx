@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { HERO_HEIGHT_VH } from "@/lib/hero-scroll";
 import { useSite } from "@/components/providers/SiteProvider";
@@ -20,52 +20,97 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
   const [loadProgress, setLoadProgress] = useState(0);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(1);
+  const firstFrameDrawnRef = useRef(false);
 
-  // Preload all 300 WebP images and decode them off-thread
+  const drawFrameToCanvas = (frameIndex: number) => {
+    const img = imagesRef.current[frameIndex];
+    const canvas = canvasRef.current;
+    if (!img?.width || !canvas) return false;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return false;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const iw = img.width;
+    const ih = img.height;
+    const r = Math.max(w / iw, h / ih);
+    const nw = iw * r;
+    const nh = ih * r;
+    const cx = (w - nw) / 2;
+    const cy = (h - nh) / 2;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, cx, cy, nw, nh);
+    return true;
+  };
+
+  const paintFirstFrame = () => {
+    if (firstFrameDrawnRef.current) return;
+    if (drawFrameToCanvas(1)) {
+      firstFrameDrawnRef.current = true;
+    }
+  };
+
+  // Preload frame 1 first so the intro cutout shows the scene immediately.
   useEffect(() => {
+    const loadedImages: HTMLImageElement[] = [];
+    imagesRef.current = loadedImages;
+
     let loadedCount = 0;
     const totalImages = 300;
-    const loadedImages: HTMLImageElement[] = [];
 
-    for (let i = 1; i <= totalImages; i++) {
-      const img = new Image();
-      const paddedFrame = String(i).padStart(4, "0");
-      img.src = `/assets/hero-sequence/frame_${paddedFrame}.webp`;
+    const registerFrame = (frameIndex: number, img: HTMLImageElement) => {
+      loadedImages[frameIndex] = img;
 
-      const onImageLoad = () => {
-        if (typeof img.decode === "function") {
-          img.decode()
-            .then(() => {
-              loadedCount++;
-              setLoadProgress(Math.round((loadedCount / totalImages) * 100));
-              if (loadedCount === totalImages) {
-                imagesRef.current = loadedImages;
-                setImagesLoaded(true);
-              }
-            })
-            .catch(() => {
-              loadedCount++;
-              setLoadProgress(Math.round((loadedCount / totalImages) * 100));
-              if (loadedCount === totalImages) {
-                imagesRef.current = loadedImages;
-                setImagesLoaded(true);
-              }
-            });
-        } else {
-          // Fallback if browser doesn't support HTMLImageElement.decode()
-          loadedCount++;
-          setLoadProgress(Math.round((loadedCount / totalImages) * 100));
-          if (loadedCount === totalImages) {
-            imagesRef.current = loadedImages;
-            setImagesLoaded(true);
-          }
+      const afterDecode = () => {
+        loadedCount++;
+        setLoadProgress(Math.round((loadedCount / totalImages) * 100));
+
+        if (frameIndex === 1) {
+          paintFirstFrame();
+        }
+
+        if (loadedCount === totalImages) {
+          setImagesLoaded(true);
         }
       };
 
-      img.onload = onImageLoad;
-      img.onerror = onImageLoad; // Fallback to avoid blocking on load error
-      loadedImages[i] = img;
+      if (typeof img.decode === "function") {
+        img.decode().then(afterDecode).catch(afterDecode);
+      } else {
+        afterDecode();
+      }
+    };
+
+    const loadFrame = (frameIndex: number) => {
+      const img = new Image();
+      img.src = `/assets/hero-sequence/frame_${String(frameIndex).padStart(4, "0")}.webp`;
+      img.onload = () => registerFrame(frameIndex, img);
+      img.onerror = () => registerFrame(frameIndex, img);
+    };
+
+    loadFrame(1);
+    for (let i = 2; i <= totalImages; i++) {
+      loadFrame(i);
     }
+  }, []);
+
+  // Keep frame 1 fitted while the intro is playing.
+  useEffect(() => {
+    if (introDone && imagesLoaded) return;
+
+    const onResize = () => paintFirstFrame();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [introDone, imagesLoaded]);
+
+  // Paint as soon as the canvas element exists (frame 1 may have loaded first).
+  useLayoutEffect(() => {
+    paintFirstFrame();
   }, []);
 
   // Handle Resize and Drawing
@@ -207,7 +252,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
         <div
           ref={canvasContainerRef}
           className="absolute inset-0 h-full w-full pointer-events-none"
-          style={{ opacity: imagesLoaded ? 1 : 0 }}
+          style={{ opacity: 1 }}
         >
           <canvas
             ref={canvasRef}
@@ -217,7 +262,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
         </div>
 
         {/* Loading overlay if images are still preloading */}
-        {!imagesLoaded && (
+        {!imagesLoaded && introDone && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-blayz-cream text-blayz-orange z-50">
             <div className="font-mono text-lg mb-2">LOADING 3D EXPERIENCE</div>
             <div className="w-48 h-[2px] bg-blayz-orange/20 relative overflow-hidden rounded">

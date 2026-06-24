@@ -94,11 +94,6 @@ html.lenis body {
 }
 
 
-::selection {
-  background: var(--blayz-orange);
-  color: var(--blayz-cream);
-}
-
 /* Scrollbar (cosmetic; Lenis hides native scroll on most setups) */
 ::-webkit-scrollbar {
   width: 0;

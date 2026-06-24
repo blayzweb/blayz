@@ -48,6 +48,14 @@ export default function RootLayout({
       className={`${satoshi.variable} ${jetbrainsMono.variable} antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <link
+          rel="preload"
+          as="image"
+          href="/assets/hero-sequence/frame_0001.webp"
+          type="image/webp"
+        />
+      </head>
       <body>{children}</body>
     </html>
   );
