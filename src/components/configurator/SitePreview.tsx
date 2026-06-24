@@ -96,7 +96,7 @@ export function SitePreview({
         <motion.div
           layout={!reduced}
           dir={rtl ? "rtl" : "ltr"}
-          className="flex max-h-[min(52vh,20rem)] flex-col gap-2 overflow-y-auto p-3 sm:max-h-none sm:gap-2.5 sm:p-4"
+          className="flex max-h-[min(52vh,20rem)] flex-col gap-2 overflow-y-auto p-3 sm:max-h-[min(58vh,24rem)] sm:gap-2.5 sm:p-4 md:max-h-[min(62vh,28rem)] lg:max-h-[min(68vh,32rem)]"
         >
           {/* nav */}
           <motion.div layout={!reduced} className="flex items-center justify-between gap-2">
