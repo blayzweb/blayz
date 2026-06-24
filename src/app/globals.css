@@ -47,7 +47,9 @@ html {
 
 /* Home intro: black page chrome until the overlay is ready (avoids cream flash). */
 html.intro-active,
-html.intro-active body {
+html.intro-active body,
+html.hero-active,
+html.hero-active body {
   background: #000;
 }
 

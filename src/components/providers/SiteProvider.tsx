@@ -110,6 +110,11 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isScrollLocked, lenisInstance]);
 
+  // Keep body background black while viewing the hero section to prevent beige bars on Safari/mobile.
+  useEffect(() => {
+    document.documentElement.classList.toggle("hero-active", !scrolled);
+  }, [scrolled]);
+
   // Fresh loads (including refresh) should always start at the hero, not where
   // the browser last restored scroll.
   useEffect(() => {
