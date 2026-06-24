@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -37,6 +37,12 @@ export const metadata: Metadata = {
     "Blayz is a studio fusing Arabic geometric tradition with code culture. We build websites that build brands.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -55,6 +61,8 @@ export default function RootLayout({
               "(function(){if('scrollRestoration' in history)history.scrollRestoration='manual';window.scrollTo(0,0);var p=location.pathname;if(p==='/'||p==='')document.documentElement.classList.add('intro-active')})();",
           }}
         />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link
           rel="preload"
           as="image"
