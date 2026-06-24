@@ -11,12 +11,18 @@ interface HeroCanvasProps {
 }
 
 export function HeroCanvas({ children }: HeroCanvasProps) {
-  const { introDone } = useSite();
+  const { introDone, heroReady, setHeroReady } = useSite();
   const triggerRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  useEffect(() => {
+    if (imagesLoaded) {
+      setHeroReady(true);
+    }
+  }, [imagesLoaded, setHeroReady]);
   const [loadProgress, setLoadProgress] = useState(0);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(1);
@@ -278,7 +284,7 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
           </div>
         )}
 
-        <ScrollIndicator ready={imagesLoaded} />
+        <ScrollIndicator ready={heroReady} />
 
         {/* Children content layers on top of canvas */}
         <div className="relative z-10 h-full w-full">

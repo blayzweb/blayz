@@ -38,7 +38,7 @@ export function IndexNavItem({
 
   return (
     <motion.button
-      layout
+      layout={isHero ? "position" : false}
       layoutId={layoutId}
       onClick={onClick}
       initial={isHero && !introDone ? { opacity: 0, y: 12 } : false}
@@ -54,7 +54,7 @@ export function IndexNavItem({
         "group text-left",
         isHero
           ? "flex items-baseline gap-3"
-          : "relative flex w-[4.25rem] flex-col gap-0.5",
+          : "relative flex w-20 flex-col gap-0.5",
       )}
     >
       {!isHero && active && (
@@ -81,7 +81,7 @@ export function IndexNavItem({
         [ {section.index} ]
       </motion.span>
 
-      <span className="relative font-sans text-[11px] leading-tight tracking-tight sm:text-inherit">
+      <span className="relative font-sans text-[11px] leading-tight tracking-tight sm:text-inherit whitespace-nowrap">
         {!isHero && (
           <>
             <motion.span

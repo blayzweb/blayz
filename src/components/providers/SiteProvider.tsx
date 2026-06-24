@@ -31,6 +31,9 @@ interface SiteContextValue {
   /** Stage A intro has finished playing (or was skipped). */
   introDone: boolean;
   setIntroDone: (v: boolean) => void;
+  /** 3D experience (hero sequence frames) is loaded and ready. */
+  heroReady: boolean;
+  setHeroReady: (v: boolean) => void;
   /** Smooth-scroll to a section via Lenis. */
   scrollTo: (id: SectionId) => void;
   /** Pause/resume Lenis (used to lock the page behind the configurator modal). */
@@ -67,7 +70,45 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<SectionId>("hero");
   const [introDone, setIntroDone] = useState(false);
+  const [heroReady, setHeroReady] = useState(false);
+  const [modalLocked, setModalLocked] = useState(false);
   const [quote, setQuote] = useState<QuotePrefill | null>(null);
+
+  const [lenisInstance, setLenisInstance] = useState<any>(null);
+
+  // Poll for Lenis ref initialization to capture the instance as soon as it mounts.
+  useEffect(() => {
+    let active = true;
+    const checkLenis = () => {
+      if (!active) return;
+      if (lenisRef.current?.lenis) {
+        setLenisInstance(lenisRef.current.lenis);
+      } else {
+        requestAnimationFrame(checkLenis);
+      }
+    };
+    checkLenis();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const isScrollLocked = !introDone || !heroReady || modalLocked;
+
+  // Centralized scroll lock side-effect.
+  useEffect(() => {
+    if (isScrollLocked) {
+      lenisInstance?.stop();
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      lenisInstance?.start();
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
+  }, [isScrollLocked, lenisInstance]);
 
   // Fresh loads (including refresh) should always start at the hero, not where
   // the browser last restored scroll.
@@ -76,8 +117,8 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
       history.scrollRestoration = "manual";
     }
     window.scrollTo(0, 0);
-    lenisRef.current?.lenis?.scrollTo(0, { immediate: true });
-  }, []);
+    lenisInstance?.scrollTo(0, { immediate: true });
+  }, [lenisInstance]);
 
   // Drive Lenis from GSAP's ticker so scroll + ScrollTrigger stay in sync.
   useEffect(() => {
@@ -190,9 +231,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const lockScroll = useCallback((locked: boolean) => {
-    const lenis = lenisRef.current?.lenis;
-    if (locked) lenis?.stop();
-    else lenis?.start();
+    setModalLocked(locked);
   }, []);
 
   const requestQuote = useCallback(
@@ -211,12 +250,14 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
       activeSection,
       introDone,
       setIntroDone,
+      heroReady,
+      setHeroReady,
       scrollTo,
       lockScroll,
       quote,
       requestQuote,
     }),
-    [atHeroStart, scrolled, activeSection, introDone, scrollTo, lockScroll, quote, requestQuote],
+    [atHeroStart, scrolled, activeSection, introDone, heroReady, scrollTo, lockScroll, quote, requestQuote],
   );
 
   return (

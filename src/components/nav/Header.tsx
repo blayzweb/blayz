@@ -26,9 +26,9 @@ function headerLogoClass(scrolled: boolean, surface: NavSurface) {
  */
 export function Header() {
   const logoRef = useRef<HTMLButtonElement>(null);
-  const { scrolled, scrollTo, introDone } = useSite();
-  const surface = useNavSurface(logoRef, introDone);
-  const show = introDone;
+  const { scrolled, scrollTo, introDone, heroReady } = useSite();
+  const show = introDone && heroReady;
+  const surface = useNavSurface(logoRef, show);
 
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-40 h-16">

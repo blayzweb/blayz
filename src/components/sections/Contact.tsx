@@ -10,30 +10,10 @@ import { bloomMedallion } from "@/lib/patterns";
 type Status = "idle" | "submitting" | "success" | "error";
 
 const PROJECT_TYPES = [
-  "Brand / identity",
-  "Website",
-  "Web app",
-  "Rebrand",
+  "New website",
+  "Rebrand / website refresh",
   "Other",
 ];
-
-const NEXT_STEPS = [
-  {
-    step: "01",
-    title: "Tell us the shape of it",
-    detail: "Scope, timeline, references — rough is fine.",
-  },
-  {
-    step: "02",
-    title: "We reply with clarity",
-    detail: "A thoughtful response within two business days.",
-  },
-  {
-    step: "03",
-    title: "We build together",
-    detail: "Design, engineering, and launch as one thread.",
-  },
-] as const;
 
 const SOCIAL_LINKS = [
   {
@@ -100,7 +80,7 @@ export function Contact() {
   useEffect(() => {
     if (!quote) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setProjectType(quote.projectType);
+    setProjectType(quote.projectType === "Website" ? "New website" : quote.projectType);
     setMessage(quote.message);
     setStatus("idle");
   }, [quote]);
@@ -236,7 +216,8 @@ export function Contact() {
                         name="message"
                         required
                         rows={message ? 8 : 5}
-                        className={`${inputCls} resize-none`}
+                        className={`${inputCls} resize-none overflow-y-auto`}
+                        data-lenis-prevent
                         placeholder="Tell us about your project, including goals, timeline, and references…"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
@@ -329,33 +310,15 @@ function ContactAside({
       <div className="flex flex-col gap-11 sm:gap-12">
         <ThreadBlock label="direct">
           <a
-            href="mailto:hello@blayz.studio"
+            href="mailto:blayzweb@gmail.com"
             className="mt-2 block font-display text-2xl leading-tight text-blayz-ink transition-colors hover:text-blayz-orange sm:text-[1.85rem]"
           >
-            hello@blayz.studio
+            blayzweb@gmail.com
           </a>
           <p className="mt-2 max-w-xs font-sans text-sm leading-relaxed text-blayz-ink/55">
             Or use the form; configs from the pricing builder paste straight
             in.
           </p>
-        </ThreadBlock>
-
-        <ThreadBlock label="// pipeline">
-          <ol className="mt-4 flex flex-col gap-5">
-            {NEXT_STEPS.map((item) => (
-              <li key={item.step}>
-                <p className="font-display text-base leading-snug text-blayz-ink sm:text-lg">
-                  <span className="mr-2 font-sans font-bold text-sm text-blayz-orange">
-                    {item.step}
-                  </span>
-                  {item.title}
-                </p>
-                <p className="mt-1 pl-7 font-sans text-sm leading-relaxed text-blayz-ink/55">
-                  {item.detail}
-                </p>
-              </li>
-            ))}
-          </ol>
         </ThreadBlock>
 
         <ThreadBlock label="elsewhere">
@@ -382,15 +345,6 @@ function ContactAside({
               </span>
             ))}
           </nav>
-
-          <p className="mt-5 font-sans text-xs leading-relaxed text-blayz-ink/45">
-            based in{" "}
-            <span className="text-blayz-ink/70">Dubai, UAE</span>
-            <span aria-hidden className="mx-2 text-blayz-ink/20">
-              ·
-            </span>
-            worldwide
-          </p>
         </ThreadBlock>
       </div>
 

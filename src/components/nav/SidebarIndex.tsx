@@ -32,7 +32,7 @@ export function SidebarIndex() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           aria-label="Sections"
           className="fixed left-5 z-40 hidden flex-col sm:left-8 md:flex"
-          style={{ top }}
+          style={{ y: top, top: 0 }}
         >
           <div className="relative flex flex-col">
             <div
