@@ -44,10 +44,10 @@ export function SitePreview({
   } as const;
 
   return (
-    <div className="w-full max-w-[min(100%,22rem)] sm:max-w-md">
+    <div className="flex min-h-0 w-full max-w-[min(100%,22rem)] flex-col sm:max-w-md">
       <motion.div
         layout={!reduced}
-        className="overflow-hidden rounded-xl border border-white/15 bg-blayz-cream shadow-[0_24px_80px_-24px_rgba(0,0,0,0.65)]"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-white/15 bg-blayz-cream shadow-[0_24px_80px_-24px_rgba(0,0,0,0.65)]"
       >
         {/* browser chrome */}
         <div className="flex items-center gap-2 border-b border-blayz-ink/10 bg-blayz-cream-deep px-3 py-2">
@@ -96,7 +96,12 @@ export function SitePreview({
         <motion.div
           layout={!reduced}
           dir={rtl ? "rtl" : "ltr"}
-          className="flex max-h-[min(52vh,20rem)] flex-col gap-2 overflow-y-auto p-3 sm:max-h-none sm:gap-2.5 sm:p-4"
+          className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-scroll p-3 sm:gap-2.5 sm:p-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blayz-ink/20 hover:[&::-webkit-scrollbar-thumb]:bg-blayz-ink/35"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "rgba(29, 27, 31, 0.35) transparent",
+            scrollbarGutter: "stable",
+          }}
         >
           {/* nav */}
           <motion.div layout={!reduced} className="flex items-center justify-between gap-2">

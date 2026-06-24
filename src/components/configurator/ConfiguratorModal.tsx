@@ -139,7 +139,10 @@ export function ConfiguratorModal({
 
         <div className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-2">
           {/* showroom — compact on mobile, full height on md+ */}
-          <div className="order-1 relative flex max-h-[38vh] shrink-0 items-center justify-center overflow-hidden bg-gradient-to-br from-blayz-ink to-blayz-ink-soft px-4 py-4 sm:max-h-[42vh] sm:px-6 sm:py-6 md:order-2 md:max-h-none md:min-h-0 md:py-8 lg:py-0">
+          <div
+            data-lenis-prevent
+            className="order-1 relative flex min-h-0 max-h-[38vh] shrink-0 items-center justify-center overflow-hidden overscroll-contain bg-gradient-to-br from-blayz-ink to-blayz-ink-soft px-4 py-4 sm:max-h-[42vh] sm:px-6 sm:py-6 md:order-2 md:max-h-none md:py-8 lg:py-0"
+          >
             <div className="arabesque-watermark pointer-events-none absolute inset-0 opacity-[0.04]" />
             <SitePreview tier={tier} selected={selected} />
           </div>
