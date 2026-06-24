@@ -42,6 +42,7 @@ function HomeContent() {
         <Spine />
 
         <main>
+          <h1 className="sr-only">Blayz | Web Design &amp; Development Studio Dubai, UAE</h1>
           <Hero />
           <AboutUs />
           <AboutToServicesTransition />

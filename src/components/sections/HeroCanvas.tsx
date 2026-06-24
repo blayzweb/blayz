@@ -339,6 +339,8 @@ export function HeroCanvas({ children }: HeroCanvasProps) {
             ref={canvasRef}
             className="h-full w-full pointer-events-none"
             style={{ willChange: "transform" }}
+            role="img"
+            aria-label="3D rendering sequence of Arabic geometric patterns and code elements"
           />
         </div>
 
