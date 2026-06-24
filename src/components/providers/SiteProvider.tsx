@@ -110,9 +110,9 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isScrollLocked, lenisInstance]);
 
-  // Keep body background black while viewing the hero section to prevent beige bars on Safari/mobile.
+  // Toggle page background to cream when scrolled past the hero section (restores Safari header/footer overlays theme).
   useEffect(() => {
-    document.documentElement.classList.toggle("hero-active", !scrolled);
+    document.documentElement.classList.toggle("scrolled-past-hero", scrolled);
   }, [scrolled]);
 
   // Fresh loads (including refresh) should always start at the hero, not where
