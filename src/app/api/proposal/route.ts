@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       clientEmail: email,
     });
 
-    const filename = proposalFilename(proposalId);
+    const filename = proposalFilename(proposalId, name);
 
     return new NextResponse(new Uint8Array(pdf), {
       status: 200,

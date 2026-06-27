@@ -29,7 +29,32 @@ export function isValidProposalId(id: string): boolean {
   return PROPOSAL_ID_RE.test(id);
 }
 
+/** Slug for a client name in proposal filenames. */
+export function slugifyClientName(name: string): string {
+  return (
+    name
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 48) || ""
+  );
+}
+
+/** Date segment extracted from a proposal id, or today if missing. */
+export function proposalDatePartFromId(proposalId: string): string {
+  return proposalId.match(/^B-(\d{6})-/)?.[1] ?? formatProposalDatePart();
+}
+
 /** Filename for a proposal download / email attachment. */
-export function proposalFilename(proposalId: string): string {
-  return `blayz-proposal-${proposalId}.pdf`;
+export function proposalFilename(
+  proposalId: string,
+  clientName?: string,
+): string {
+  const datePart = proposalDatePartFromId(proposalId);
+  const slug = clientName ? slugifyClientName(clientName) : "";
+  if (slug) return `blayz-proposal-${slug}-${datePart}.pdf`;
+  return `blayz-proposal-${datePart}.pdf`;
 }

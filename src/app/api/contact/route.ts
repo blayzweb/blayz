@@ -91,7 +91,7 @@ export async function POST(req: Request) {
         });
         attachments = [
           {
-            filename: proposalFilename(proposalId),
+            filename: proposalFilename(proposalId, name),
             content: pdf,
           },
         ];

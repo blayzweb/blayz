@@ -33,7 +33,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://blayz.ae"),
-  title: "Blayz | Crafted with code & culture",
+  title: "blayz",
   description:
     "Blayz is a web design & development studio fusing Arabic geometric tradition with code culture. We build websites that build brands.",
   keywords: [

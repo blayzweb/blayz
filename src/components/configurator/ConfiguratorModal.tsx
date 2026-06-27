@@ -37,7 +37,6 @@ export function ConfiguratorModal({
   const [selected, setSelected] = useState<string[]>(
     () => initialSelected ?? defaultSelection(tier.id),
   );
-  const [downloading, setDownloading] = useState(false);
 
   // Lock the page behind the modal and wire up Escape-to-close.
   useEffect(() => {
@@ -78,31 +77,6 @@ export function ConfiguratorModal({
       selectedAddons: selected,
     });
     onClose();
-  }
-
-  async function downloadProposal() {
-    setDownloading(true);
-    try {
-      const params = new URLSearchParams({
-        tierId: tier.id,
-        addons: selected.join(","),
-      });
-      const res = await fetch(`/api/proposal?${params.toString()}`);
-      if (!res.ok) throw new Error("Could not generate proposal.");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download =
-        res.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1] ??
-        "blayz-proposal.pdf";
-      anchor.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      // Non-blocking — user can still request the build.
-    } finally {
-      setDownloading(false);
-    }
   }
 
   const estimate = computeEstimate(tier, selected);
@@ -290,23 +264,13 @@ export function ConfiguratorModal({
                     </p>
                   )}
                 </div>
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={downloadProposal}
-                    disabled={downloading}
-                    className="w-full rounded-lg border border-blayz-ink/20 bg-white/60 px-5 py-3 font-sans font-bold text-sm text-blayz-ink transition-colors hover:border-blayz-orange hover:text-blayz-orange disabled:opacity-60 sm:w-auto"
-                  >
-                    {downloading ? "generating…" : "download proposal PDF"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={confirm}
-                    className="w-full rounded-lg bg-blayz-orange px-5 py-3 font-sans font-bold text-sm text-blayz-cream transition-colors hover:bg-blayz-ink sm:w-auto"
-                  >
-                    &lt; request this build /&gt;
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={confirm}
+                  className="w-full rounded-lg bg-blayz-orange px-5 py-3 font-sans font-bold text-sm text-blayz-cream transition-colors hover:bg-blayz-ink sm:w-auto"
+                >
+                  &lt; request this build /&gt;
+                </button>
               </div>
               <p className="mt-2 font-sans text-[10px] text-blayz-ink/35">
                 rough estimate; final scope confirmed together.

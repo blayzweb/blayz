@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useSite } from "@/components/providers/SiteProvider";
 import { bloomMedallion } from "@/lib/patterns";
-import { getTierById } from "@/content/pricing";
 import { createProposalId, proposalFilename } from "@/lib/proposal/id";
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -58,40 +57,55 @@ const SOCIAL_LINKS = [
 
 function ProposalAttachment({
   filename,
-  subtitle,
   downloading,
   onDownload,
 }: {
   filename: string;
-  subtitle: string;
   downloading: boolean;
   onDownload: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-blayz-ink/12 bg-blayz-cream/70 px-3 py-2.5">
+    <button
+      type="button"
+      onClick={onDownload}
+      disabled={downloading}
+      aria-label={`Download ${filename}`}
+      className="flex w-full items-center gap-3 rounded-lg border border-blayz-ink/12 bg-blayz-cream/70 px-3 py-2.5 text-left transition-colors hover:border-blayz-orange/35 hover:bg-blayz-orange/5 disabled:opacity-60"
+    >
       <span
         aria-hidden
-        className="grid size-9 shrink-0 place-items-center rounded-md bg-blayz-orange/10 font-sans text-xs font-bold text-blayz-orange"
+        className="grid size-9 shrink-0 place-items-center rounded-md bg-blayz-orange/10 text-blayz-orange"
       >
-        PDF
+        <svg className="size-5" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+            fill="currentColor"
+            fillOpacity={0.15}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M14 2v6h6"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M8 13h8M8 16.5h5.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-sans text-sm font-medium text-blayz-ink">
-          {filename}
-        </span>
-        <span className="block truncate font-sans text-xs text-blayz-ink/50">
-          {subtitle}
-        </span>
+      <span className="min-w-0 flex-1 truncate font-sans text-sm font-medium text-blayz-ink">
+        {filename}
       </span>
-      <button
-        type="button"
-        onClick={onDownload}
-        disabled={downloading}
-        className="shrink-0 rounded-md px-2 py-1 font-sans text-xs font-bold text-blayz-orange transition-colors hover:bg-blayz-orange/10 disabled:opacity-60"
-      >
-        {downloading ? "…" : "download"}
-      </button>
-    </div>
+      <span className="shrink-0 font-sans text-xs font-bold text-blayz-orange">
+        {downloading ? "generating…" : "download"}
+      </span>
+    </button>
   );
 }
 
@@ -135,8 +149,7 @@ export function Contact() {
   }, [quote]);
 
   const proposalAttachmentName =
-    quote && proposalId ? proposalFilename(proposalId) : "";
-  const quoteTierName = quote ? getTierById(quote.tierId).name : "";
+    quote && proposalId ? proposalFilename(proposalId, clientName) : "";
 
   function proposalUrl() {
     if (!quote || !proposalId) return "";
@@ -160,9 +173,11 @@ export function Contact() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
+      const headerFilename = res.headers
+        .get("Content-Disposition")
+        ?.match(/filename="(.+)"/)?.[1];
       anchor.download =
-        res.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1] ??
-        "blayz-proposal.pdf";
+        headerFilename || proposalAttachmentName || "blayz-proposal.pdf";
       anchor.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -319,7 +334,6 @@ export function Contact() {
                         {quote && proposalId && (
                           <ProposalAttachment
                             filename={proposalAttachmentName}
-                            subtitle={`${quoteTierName} build · #${proposalId}`}
                             downloading={downloading}
                             onDownload={downloadProposal}
                           />
