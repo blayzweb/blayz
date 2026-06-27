@@ -14,11 +14,13 @@ import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { heroScrollEndPx } from "@/lib/hero-scroll";
 import type { SectionId } from "@/lib/sections";
 import { SECTIONS } from "@/lib/sections";
+import type { TierId } from "@/content/pricing";
 
 /** A build configuration handed off from the Pricing configurator to Contact. */
 export interface QuotePrefill {
   projectType: string;
-  message: string;
+  tierId: TierId;
+  selectedAddons: string[];
 }
 
 interface SiteContextValue {

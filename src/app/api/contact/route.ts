@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import type { TierId } from "@/content/pricing";
+import { renderProposalPdf, proposalFilename } from "@/lib/proposal/generate";
+import { createProposalId, isValidProposalId } from "@/lib/proposal/id";
 
 export const runtime = "nodejs";
 
@@ -8,9 +11,13 @@ interface ContactPayload {
   email?: string;
   projectType?: string;
   message?: string;
+  tierId?: TierId;
+  selectedAddons?: string[];
+  proposalId?: string;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const VALID_TIERS = new Set<TierId>(["starter", "business", "premium"]);
 
 export async function POST(req: Request) {
   let body: ContactPayload;
@@ -24,10 +31,20 @@ export async function POST(req: Request) {
   const email = body.email?.trim();
   const projectType = body.projectType?.trim() || "Unspecified";
   const message = body.message?.trim();
+  const hasProposal =
+    body.tierId &&
+    VALID_TIERS.has(body.tierId) &&
+    Array.isArray(body.selectedAddons);
 
-  if (!name || !email || !message) {
+  if (!name || !email) {
     return NextResponse.json(
-      { error: "Name, email and message are required." },
+      { error: "Name and email are required." },
+      { status: 400 },
+    );
+  }
+  if (!message && !hasProposal) {
+    return NextResponse.json(
+      { error: "Please add a message." },
       { status: 400 },
     );
   }
@@ -53,6 +70,42 @@ export async function POST(req: Request) {
 
   try {
     const resend = new Resend(apiKey);
+
+    let attachments:
+      | { filename: string; content: Buffer }[]
+      | undefined;
+
+    if (hasProposal) {
+      const proposalId =
+        body.proposalId && isValidProposalId(body.proposalId)
+          ? body.proposalId
+          : createProposalId();
+
+      try {
+        const pdf = await renderProposalPdf({
+          tierId: body.tierId!,
+          selectedAddons: body.selectedAddons!,
+          proposalId,
+          clientName: name,
+          clientEmail: email,
+        });
+        attachments = [
+          {
+            filename: proposalFilename(proposalId),
+            content: pdf,
+          },
+        ];
+      } catch (pdfErr) {
+        console.error("[contact] Proposal PDF generation failed:", pdfErr);
+      }
+    }
+
+    const bodyText = message
+      ? message
+      : hasProposal
+        ? "(Build configuration attached as proposal PDF.)"
+        : "";
+
     const { error } = await resend.emails.send({
       from,
       to,
@@ -63,8 +116,9 @@ export async function POST(req: Request) {
         `Email: ${email}`,
         `Project type: ${projectType}`,
         "",
-        message,
+        bodyText,
       ].join("\n"),
+      attachments,
     });
 
     if (error) {
