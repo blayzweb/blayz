@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useSite } from "@/components/providers/SiteProvider";
 import { bloomMedallion } from "@/lib/patterns";
+import { getTierById } from "@/content/pricing";
+import { createProposalId, proposalFilename } from "@/lib/proposal/id";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -54,6 +56,45 @@ const SOCIAL_LINKS = [
   },
 ] as const;
 
+function ProposalAttachment({
+  filename,
+  subtitle,
+  downloading,
+  onDownload,
+}: {
+  filename: string;
+  subtitle: string;
+  downloading: boolean;
+  onDownload: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-blayz-ink/12 bg-blayz-cream/70 px-3 py-2.5">
+      <span
+        aria-hidden
+        className="grid size-9 shrink-0 place-items-center rounded-md bg-blayz-orange/10 font-sans text-xs font-bold text-blayz-orange"
+      >
+        PDF
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-sans text-sm font-medium text-blayz-ink">
+          {filename}
+        </span>
+        <span className="block truncate font-sans text-xs text-blayz-ink/50">
+          {subtitle}
+        </span>
+      </span>
+      <button
+        type="button"
+        onClick={onDownload}
+        disabled={downloading}
+        className="shrink-0 rounded-md px-2 py-1 font-sans text-xs font-bold text-blayz-orange transition-colors hover:bg-blayz-orange/10 disabled:opacity-60"
+      >
+        {downloading ? "…" : "download"}
+      </button>
+    </div>
+  );
+}
+
 /**
  * Contact (PRD §7.5). Synthesis of every prior motif: arabesque watermark base,
  * terminal-framed form, process cards, and cultural accent — closing the page
@@ -66,6 +107,10 @@ export function Contact() {
   const [error, setError] = useState<string>("");
   const [projectType, setProjectType] = useState("");
   const [message, setMessage] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [downloading, setDownloading] = useState(false);
+  const [proposalId, setProposalId] = useState<string | null>(null);
 
   const fadeUp = reduced
     ? {}
@@ -78,12 +123,55 @@ export function Contact() {
 
   // Prefill from a configurator build whenever a new quote arrives.
   useEffect(() => {
-    if (!quote) return;
+    if (!quote) {
+      setProposalId(null);
+      return;
+    }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setProjectType(quote.projectType === "Website" ? "New website" : quote.projectType);
-    setMessage(quote.message);
+    setMessage("");
     setStatus("idle");
+    setProposalId(createProposalId());
   }, [quote]);
+
+  const proposalAttachmentName =
+    quote && proposalId ? proposalFilename(proposalId) : "";
+  const quoteTierName = quote ? getTierById(quote.tierId).name : "";
+
+  function proposalUrl() {
+    if (!quote || !proposalId) return "";
+    const params = new URLSearchParams({
+      tierId: quote.tierId,
+      addons: quote.selectedAddons.join(","),
+      proposalId,
+    });
+    if (clientName.trim()) params.set("name", clientName.trim());
+    if (clientEmail.trim()) params.set("email", clientEmail.trim());
+    return `/api/proposal?${params.toString()}`;
+  }
+
+  async function downloadProposal() {
+    if (!quote) return;
+    setDownloading(true);
+    try {
+      const res = await fetch(proposalUrl());
+      if (!res.ok) throw new Error("Could not generate proposal.");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download =
+        res.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1] ??
+        "blayz-proposal.pdf";
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Could not download the proposal. Please try again.");
+      setStatus("error");
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -96,7 +184,16 @@ export function Contact() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          ...(quote && proposalId
+            ? {
+                tierId: quote.tierId,
+                selectedAddons: quote.selectedAddons,
+                proposalId,
+              }
+            : {}),
+        }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -106,6 +203,8 @@ export function Contact() {
       form.reset();
       setProjectType("");
       setMessage("");
+      setClientName("");
+      setClientEmail("");
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -178,6 +277,8 @@ export function Contact() {
                           autoComplete="name"
                           className={inputCls}
                           placeholder="Your name"
+                          value={clientName}
+                          onChange={(e) => setClientName(e.target.value)}
                         />
                       </Field>
 
@@ -189,6 +290,8 @@ export function Contact() {
                           autoComplete="email"
                           className={inputCls}
                           placeholder="you@studio.com"
+                          value={clientEmail}
+                          onChange={(e) => setClientEmail(e.target.value)}
                         />
                       </Field>
                     </div>
@@ -211,17 +314,31 @@ export function Contact() {
                       </select>
                     </Field>
 
-                    <Field label="message" required>
-                      <textarea
-                        name="message"
-                        required
-                        rows={message ? 8 : 5}
-                        className={`${inputCls} resize-none overflow-y-auto`}
-                        data-lenis-prevent
-                        placeholder="Tell us about your project, including goals, timeline, and references…"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                      />
+                    <Field label="message" required={!quote}>
+                      <div className="flex flex-col gap-2">
+                        {quote && proposalId && (
+                          <ProposalAttachment
+                            filename={proposalAttachmentName}
+                            subtitle={`${quoteTierName} build · #${proposalId}`}
+                            downloading={downloading}
+                            onDownload={downloadProposal}
+                          />
+                        )}
+                        <textarea
+                          name="message"
+                          required={!quote}
+                          rows={quote ? 4 : 5}
+                          className={`${inputCls} resize-none overflow-y-auto`}
+                          data-lenis-prevent
+                          placeholder={
+                            quote
+                              ? "Anything else we should know? (optional)"
+                              : "Tell us about your project, including goals, timeline, and references…"
+                          }
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                        />
+                      </div>
                     </Field>
 
                     {status === "error" && (
@@ -316,8 +433,8 @@ function ContactAside({
             blayzweb@gmail.com
           </a>
           <p className="mt-2 max-w-xs font-sans text-sm leading-relaxed text-blayz-ink/55">
-            Or use the form; configs from the pricing builder paste straight
-            in.
+            Or use the form; configurator builds arrive with a proposal PDF
+            attached.
           </p>
         </ThreadBlock>
 

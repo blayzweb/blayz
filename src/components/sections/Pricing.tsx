@@ -4,7 +4,6 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   PRICING_TIERS,
-  buildSummary,
   computeEstimate,
   defaultSelection,
   headlineFigure,
@@ -201,7 +200,8 @@ export function Pricing() {
                         onClick={() =>
                           requestQuote({
                             projectType: "Website",
-                            message: buildSummary(tier, config),
+                            tierId: tier.id,
+                            selectedAddons: config,
                           })
                         }
                         className="w-full rounded-lg bg-[#7A1118] py-2.5 font-sans font-bold text-sm text-[#F4EFE7] transition-colors hover:bg-[#4A090D]"

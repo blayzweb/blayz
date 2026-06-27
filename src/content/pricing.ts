@@ -308,3 +308,59 @@ export function buildSummary(tier: PricingTier, selected: string[]): string {
 
   return lines.join("\n");
 }
+
+export interface ProposalBreakdown {
+  baseOnce: number;
+  addonsOnce: number;
+  totalOnce: number;
+  recurringMonthly: number;
+}
+
+/** Itemised one-off / recurring totals for proposal PDFs. */
+export function computeBreakdown(
+  tier: PricingTier,
+  selected: string[],
+): ProposalBreakdown {
+  let addonsOnce = 0;
+  let recurringMonthly = 0;
+
+  for (const addon of ADDONS) {
+    if (!selected.includes(addon.id)) continue;
+    if (isIncluded(addon, tier.id)) continue;
+    if (addon.unit === "once") addonsOnce += addon.delta[0];
+    else recurringMonthly += addon.delta[0];
+  }
+
+  const baseOnce = tier.base[0];
+  return {
+    baseOnce,
+    addonsOnce,
+    totalOnce: baseOnce + addonsOnce,
+    recurringMonthly,
+  };
+}
+/** Price label for an add-on row in the proposal PDF. */
+export function addonDisplayPrice(
+  addon: Addon,
+  tierId: TierId,
+  selected: string[],
+): string {
+  const included = isIncluded(addon, tierId);
+  const active = included || selected.includes(addon.id);
+
+  if (included && active) return "Included";
+  if (!active) {
+    const amount = formatMoney(addon.delta[0]);
+    return addon.unit === "mo" ? `+ ${CURRENCY_CODE} ${amount} /mo` : `+ ${CURRENCY_CODE} ${amount}`;
+  }
+
+  const amount = formatMoney(addon.delta[0]);
+  return addon.unit === "mo" ? `+ ${CURRENCY_CODE} ${amount} /mo` : `+ ${CURRENCY_CODE} ${amount}`;
+}
+
+/** Look up a tier by id; throws when missing. */
+export function getTierById(tierId: TierId): PricingTier {
+  const tier = PRICING_TIERS.find((t) => t.id === tierId);
+  if (!tier) throw new Error(`Unknown tier: ${tierId}`);
+  return tier;
+}
